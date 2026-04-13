@@ -5,19 +5,24 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plug, Wifi, Sun, Coffee, Volume1, Trees, Users, Sofa, MapPin, Timer } from 'lucide-react';
+import { X, Plug, Wifi, Sun, Coffee, Volume1, Trees, Users, Sofa, Zap, CheckCircle, AlertCircle, Clock, type LucideIcon } from 'lucide-react';
 import { TableState } from '@/types';
 import { useTableStatus } from '@/hooks/useTableStatus';
-import StatusBadge from '@/components/ui/StatusBadge';
-import { LucideIcon } from 'lucide-react';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Plug, Wifi, Sun, Coffee, Volume1, Trees, Users, Sofa,
 };
 
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; icon: LucideIcon }> = {
+  available: { label: 'Tersedia',  bg: 'bg-green-500',  text: 'text-white', icon: CheckCircle },
+  occupied:  { label: 'Terisi',    bg: 'bg-red-500',    text: 'text-white', icon: AlertCircle },
+  warning:   { label: 'Overstay',  bg: 'bg-amber-500',  text: 'text-white', icon: Clock },
+  offline:   { label: 'Offline',   bg: 'bg-neutral-400',text: 'text-white', icon: AlertCircle },
+};
+
 interface TableDetailDrawerProps {
-  table: TableState | null;
-  onClose: () => void;
+  readonly table: TableState | null;
+  readonly onClose: () => void;
 }
 
 export default function TableDetailDrawer({ table, onClose }: TableDetailDrawerProps) {
@@ -28,8 +33,10 @@ export default function TableDetailDrawer({ table, onClose }: TableDetailDrawerP
   );
 }
 
-function DrawerContent({ table, onClose }: { table: TableState; onClose: () => void }) {
-  const { statusLabel, statusColor, elapsedFormatted, isOverstay } = useTableStatus(table);
+function DrawerContent({ table, onClose }: { readonly table: TableState; readonly onClose: () => void }) {
+  const { elapsedFormatted } = useTableStatus(table);
+  const statusCfg = STATUS_CONFIG[table.status] ?? STATUS_CONFIG.offline;
+  const StatusIcon = statusCfg.icon;
 
   return (
     <>
@@ -39,7 +46,7 @@ function DrawerContent({ table, onClose }: { table: TableState; onClose: () => v
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 z-50 bg-black/50"
+        className="fixed inset-0 z-50 bg-black/40"
       />
 
       {/* Drawer */}
@@ -48,74 +55,89 @@ function DrawerContent({ table, onClose }: { table: TableState; onClose: () => v
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md rounded-t-3xl border-t border-neutral-700 bg-[#1A1A1A] p-5"
+        className="fixed bottom-0 left-0 right-0 z-50 mx-auto max-w-md rounded-t-3xl bg-white shadow-2xl flex flex-col max-h-[85vh]"
       >
-        {/* Handle bar */}
-        <div className="mb-4 flex justify-center">
-          <div className="h-1 w-10 rounded-full bg-neutral-600" />
+        {/* Handle bar — fixed, not scrolled */}
+        <div className="pt-3 pb-1 flex justify-center shrink-0">
+          <div className="h-1 w-10 rounded-full bg-neutral-300" />
         </div>
 
-        {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-neutral-100">Meja {table.name}</h3>
-            <div className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500">
-              <MapPin className="h-3 w-3" />
-              {table.zone} · {table.seatType}
+        {/* Scrollable content */}
+        <div className="overflow-y-auto overscroll-contain px-5 pb-24 min-h-0 flex-1">
+          {/* Header */}
+          <div className="mb-4 mt-3 flex items-start justify-between">
+            <div>
+              <h3 className="text-2xl font-bold text-neutral-900">{table.name}</h3>
+              <p className="mt-0.5 text-sm text-neutral-400">{table.seatType}</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="rounded-full bg-neutral-100 p-2 text-neutral-500 transition-colors hover:bg-neutral-200"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Photo area with status badge */}
+          <div className="relative mb-4 h-44 w-full overflow-hidden rounded-2xl">
+            {/* Gradient placeholder photo */}
+            <div className="absolute inset-0 bg-linear-to-br from-slate-700 via-blue-800 to-slate-900 flex items-end justify-start p-4">
+              <Sofa className="h-14 w-14 text-white/20" />
+            </div>
+            {/* Subtle texture overlay */}
+            <div className="absolute inset-0 bg-linear-to-t from-black/30 to-transparent" />
+
+            {/* Status badge */}
+            <div
+              className={`absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-lg ${statusCfg.bg} ${statusCfg.text}`}
+            >
+              <StatusIcon className="h-3.5 w-3.5" />
+              {statusCfg.label}
+              {table.isOccupied && elapsedFormatted ? (
+                <span> · {elapsedFormatted}</span>
+              ) : null}
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-full bg-neutral-800 p-2 text-neutral-400 transition-colors hover:text-white"
-          >
-            <X className="h-4 w-4" />
+
+          {/* Smart Insight */}
+          <div className="mb-4 rounded-xl bg-neutral-50 border border-neutral-100 p-4">
+            <div className="mb-1.5 flex items-center gap-2">
+              <Zap className="h-4 w-4 text-amber-500" />
+              <span className="text-[11px] font-bold tracking-widest text-neutral-400 uppercase">
+                Smart Insight
+              </span>
+            </div>
+            <p className="text-sm text-neutral-700 leading-relaxed">
+              Rata-rata penggunaan di meja ini:{' '}
+              <span className="font-bold text-neutral-900">120 menit</span>.
+            </p>
+          </div>
+
+          {/* Facilities */}
+          <div className="mb-5">
+            <p className="mb-2.5 text-[11px] font-bold tracking-widest text-neutral-400 uppercase">
+              Fasilitas Tersedia
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {table.facilities.map((f) => {
+                const Icon = ICON_MAP[f.icon] || Plug;
+                return (
+                  <span
+                    key={f.label}
+                    className="flex items-center gap-1.5 rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-700"
+                  >
+                    <Icon className="h-3.5 w-3.5 text-neutral-500" />
+                    {f.label}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <button className="w-full rounded-2xl bg-neutral-900 py-4 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 active:bg-neutral-950">
+            Pesan Meja Sekarang →
           </button>
-        </div>
-
-        {/* Status + Timer */}
-        <div className="mb-4 flex items-center gap-3">
-          <StatusBadge
-            label={statusLabel}
-            variant={table.status === 'occupied' ? (isOverstay ? 'info' : 'occupied') : table.status}
-            pulse={table.status === 'warning'}
-          />
-          {table.isOccupied && (
-            <span className={`flex items-center gap-1 font-mono text-sm ${statusColor}`}>
-              <Timer className="h-3.5 w-3.5" />
-              {elapsedFormatted}
-            </span>
-          )}
-        </div>
-
-        {/* Facilities */}
-        <div className="mb-4">
-          <p className="mb-2 text-xs font-semibold text-neutral-400">Fasilitas</p>
-          <div className="flex flex-wrap gap-2">
-            {table.facilities.map((f) => {
-              const Icon = ICON_MAP[f.icon] || Plug;
-              return (
-                <span
-                  key={f.label}
-                  className="flex items-center gap-1.5 rounded-lg border border-neutral-700 bg-neutral-800/60 px-2.5 py-1.5 text-xs text-neutral-300"
-                >
-                  <Icon className="h-3.5 w-3.5 text-amber-400" />
-                  {f.label}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Sensor data */}
-        <div className="flex gap-4 rounded-xl border border-neutral-700 bg-neutral-800/40 p-3">
-          <div>
-            <p className="text-[10px] text-neutral-500">Jarak Sensor</p>
-            <p className="font-mono text-sm font-bold text-neutral-200">{table.distance} cm</p>
-          </div>
-          <div>
-            <p className="text-[10px] text-neutral-500">RFID UID</p>
-            <p className="font-mono text-sm font-bold text-neutral-200">{table.uid ?? '—'}</p>
-          </div>
         </div>
       </motion.div>
     </>
