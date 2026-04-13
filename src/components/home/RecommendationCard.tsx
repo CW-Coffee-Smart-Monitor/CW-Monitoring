@@ -33,10 +33,10 @@ export default function RecommendationCard() {
         <Sparkles className="h-4 w-4 text-amber-400" />
         <p className="text-xs font-semibold text-amber-300">Rekomendasi</p>
       </div>
-      <p className="text-sm font-bold text-neutral-100">
+      <p className="text-sm font-bold text-neutral-900">
         {recommendation.name} — {recommendation.zone}
       </p>
-      <p className="mb-2 text-xs text-neutral-400">{facilityText}</p>
+      <p className="mb-2 text-xs text-neutral-500">{facilityText}</p>
       <button className="flex items-center gap-1 rounded-lg bg-amber-500/20 px-3 py-1.5 text-xs font-medium text-amber-400 transition-colors hover:bg-amber-500/30">
         Lihat Detail <ArrowRight className="h-3 w-3" />
       </button>

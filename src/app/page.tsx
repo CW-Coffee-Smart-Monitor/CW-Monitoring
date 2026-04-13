@@ -26,9 +26,9 @@ export default function HomePage() {
           icon={LayoutGrid}
           value={summary.totalTables}
           label="Total Meja"
-          color="text-neutral-300"
+          color="text-neutral-600"
           bgColor="bg-neutral-500/10"
-          borderColor="border-neutral-700"
+          borderColor="border-neutral-300"
         />
         <SummaryCard
           icon={CheckCircle}

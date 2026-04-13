@@ -37,7 +37,7 @@ export default function SummaryCard({
         </div>
         <div>
           <p className={`text-2xl font-bold ${color}`}>{value}</p>
-          <p className="text-xs text-neutral-400">{label}</p>
+          <p className="text-xs text-neutral-500">{label}</p>
         </div>
       </div>
     </motion.div>
