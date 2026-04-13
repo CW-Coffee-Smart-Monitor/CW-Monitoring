@@ -28,7 +28,7 @@ export default function TableCard({ table, onClick }: TableCardProps) {
     >
       {/* Header */}
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-neutral-100">{table.name}</h3>
+        <h3 className="text-sm font-semibold text-neutral-900">{table.name}</h3>
         <StatusBadge
           label={statusLabel}
           variant={table.status === 'occupied' ? 'occupied' : table.status}

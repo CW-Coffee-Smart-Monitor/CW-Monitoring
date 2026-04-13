@@ -25,7 +25,7 @@ export default function TableGrid() {
 
   return (
     <div>
-      <h2 className="mb-3 text-sm font-semibold text-neutral-300">
+      <h2 className="mb-3 text-sm font-semibold text-neutral-600">
         Semua Meja
       </h2>
       <motion.div
