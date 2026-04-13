@@ -5,8 +5,7 @@
  * Matches the design: "Dekat Colokan", "Meja Sofa", "Area Outdoor", etc.
  */
 
-import { Plug, Sofa, TreePalm, Coffee, Volume1, Users } from 'lucide-react';
-import { LucideIcon } from 'lucide-react';
+import { TreePalm, Coffee, Users, type LucideIcon } from 'lucide-react';
 
 interface Chip {
   label: string;
@@ -15,17 +14,14 @@ interface Chip {
 }
 
 const CHIPS: Chip[] = [
-  { label: 'Dekat Colokan', icon: Plug, filterKey: 'Colokan' },
-  { label: 'Meja Sofa', icon: Sofa, filterKey: 'Sofa' },
   { label: 'Area Outdoor', icon: TreePalm, filterKey: 'Outdoor' },
-  { label: 'Dekat Counter', icon: Coffee, filterKey: 'Counter' },
-  { label: 'Area Tenang', icon: Volume1, filterKey: 'Tenang' },
-  { label: 'Meeting Area', icon: Users, filterKey: 'Meeting' },
+  { label: 'Dekat Counter', icon: Coffee,   filterKey: 'Counter' },
+  { label: 'Meeting Area', icon: Users,     filterKey: 'Meeting' },
 ];
 
 interface FilterChipsProps {
-  activeFilter: string | null;
-  onFilterChange: (key: string | null) => void;
+  readonly activeFilter: string | null;
+  readonly onFilterChange: (key: string | null) => void;
 }
 
 export default function FilterChips({ activeFilter, onFilterChange }: FilterChipsProps) {
