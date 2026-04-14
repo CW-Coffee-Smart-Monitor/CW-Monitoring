@@ -17,6 +17,10 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; className: string }>
     label: 'Dibatalkan',
     className: 'bg-rose-100 text-rose-600',
   },
+  completed: {
+    label: 'Selesai',
+    className: 'bg-blue-100 text-blue-700',
+  },
 };
 
 export default function BookingHistory({ bookings }: BookingHistoryProps) {
@@ -75,4 +79,4 @@ export default function BookingHistory({ bookings }: BookingHistoryProps) {
       )}
     </div>
   );
-}
+}
