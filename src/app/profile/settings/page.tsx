@@ -8,7 +8,7 @@ export default function SettingsPage() {
   const [isPublic, setIsPublic] = useState(true);
 
   return (
-    <div className="min-h-screen bg-neutral-100 p-4 space-y-4">
+    <div className="min-h-screen bg-white p-4 space-y-4">
       <h1 className="text-lg font-semibold text-neutral-900">
         Pengaturan
       </h1>
