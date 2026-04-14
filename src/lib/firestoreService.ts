@@ -42,11 +42,11 @@ export async function saveTableStatus(table: TableState): Promise<void> {
   const ref = doc(db, 'tables', String(table.id));
   const data: TableDoc = {
     status:        table.status,
-    uid:           table.uid,
+    uid:           table.uid ?? null,
     isOccupied:    table.isOccupied,
     distance:      table.distance,
     isGhostBooking: table.isGhostBooking,
-    checkInTime:   table.checkInTime,
+    checkInTime:   table.checkInTime ?? null,
     elapsedSeconds: table.elapsedSeconds,
   };
   await setDoc(ref, data, { merge: true });

@@ -23,6 +23,7 @@ import { TableState, SensorPayload, DashboardSummary, BookingRecord } from '@/ty
 import { INITIAL_TABLES } from '@/data/tables';
 import { CONFIG } from '@/lib/config';
 import { subscribeToTables, saveTableStatus, saveBookingRecord, TableDoc } from '@/lib/firestoreService';
+import { subscribeToRTDB } from '@/lib/rtdbService';
 
 // ──────────────────────────── Types ────────────────────────────
 
@@ -42,11 +43,14 @@ type Action =
   | { type: 'GHOST_CONFIRM'; tableId: number }
   | { type: 'CHECKOUT'; tableId: number; record: BookingRecord }
   | { type: 'DEMO_SET'; tableId: number; status: TableState['status'] }
-  | { type: 'FIRESTORE_SYNC'; updates: Record<number, TableDoc> };
+  | { type: 'FIRESTORE_SYNC'; updates: Record<number, TableDoc> }
+  | { type: 'RTDB_SYNC'; updates: Record<number, TableDoc> };
 
 interface State {
   tables: TableState[];
   bookingHistory: BookingRecord[];
+  /** ID tabel yang dikontrol RTDB (ESP32) — tidak boleh di-overwrite Firestore */
+  rtdbControlled: Set<number>;
 }
 
 // ──────────────────────────── Reducer ──────────────────────────
@@ -158,21 +162,53 @@ function tableReducer(state: State, action: Action): State {
       };
     }
 
+    case 'RTDB_SYNC': {
+      const newControlled = new Set(state.rtdbControlled);
+      return {
+        ...state,
+        rtdbControlled: newControlled,
+        tables: state.tables.map((t) => {
+          const remote = action.updates[t.id];
+          if (!remote) return t;
+          newControlled.add(t.id);
+          const isOcc = remote.isOccupied ?? false;
+          const elapsed = remote.elapsedSeconds ?? 0;
+          // ESP32 mengirim elapsedSeconds dari millis(), bukan unix timestamp.
+          // Hitung checkInTime mundur dari sekarang agar timer website sinkron.
+          const inferredCheckIn = isOcc && elapsed > 0
+            ? Date.now() - elapsed * 1000
+            : (isOcc ? Date.now() : null);
+          return {
+            ...t,
+            status:         remote.status,
+            uid:            remote.uid ?? null,
+            isOccupied:     isOcc,
+            distance:       remote.distance ?? t.distance,
+            isGhostBooking: remote.isGhostBooking ?? false,
+            checkInTime:    inferredCheckIn,
+            elapsedSeconds: elapsed,
+          };
+        }),
+      };
+    }
+
     case 'FIRESTORE_SYNC': {
       return {
         ...state,
         tables: state.tables.map((t) => {
+          // Jangan overwrite tabel yang sudah dikontrol RTDB (ESP32)
+          if (state.rtdbControlled.has(t.id)) return t;
           const remote = action.updates[t.id];
           if (!remote) return t;
           return {
             ...t,
             status:        remote.status,
-            uid:           remote.uid,
-            isOccupied:    remote.isOccupied,
-            distance:      remote.distance,
-            isGhostBooking: remote.isGhostBooking,
-            checkInTime:   remote.checkInTime,
-            elapsedSeconds: remote.elapsedSeconds,
+            uid:           remote.uid ?? null,
+            isOccupied:    remote.isOccupied ?? false,
+            distance:      remote.distance ?? t.distance,
+            isGhostBooking: remote.isGhostBooking ?? false,
+            checkInTime:   remote.checkInTime ?? null,
+            elapsedSeconds: remote.elapsedSeconds ?? 0,
           };
         }),
       };
@@ -191,6 +227,7 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(tableReducer, {
     tables: INITIAL_TABLES,
     bookingHistory: [],
+    rtdbControlled: new Set<number>(),
   });
 
   const [isSimulation, setIsSimulation] = React.useState(
@@ -255,6 +292,14 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsub = subscribeToTables((updates) => {
       dispatch({ type: 'FIRESTORE_SYNC', updates });
+    });
+    return () => unsub();
+  }, []);
+
+  // ── Realtime Database listener (data dari ESP32 / Wokwi) ──────
+  useEffect(() => {
+    const unsub = subscribeToRTDB((updates) => {
+      dispatch({ type: 'RTDB_SYNC', updates });
     });
     return () => unsub();
   }, []);

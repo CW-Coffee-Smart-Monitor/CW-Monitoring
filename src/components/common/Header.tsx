@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Radio, MonitorSmartphone, Menu, X, Home, Map, CalendarClock, User } from 'lucide-react';
+import { Radio, MonitorSmartphone, Menu, X, Home, Map, CalendarClock, User, Bell } from 'lucide-react';
 import { useTableContext } from '@/context/TableContext';
 
 const NAV_ITEMS = [
@@ -32,11 +32,17 @@ export default function Header() {
           <div className="flex items-center gap-2">
             <Image src="/CW Club.png" alt="CW Club Logo" width={36} height={36} className="object-contain" />
             <span className="text-base font-bold tracking-wide text-white">
-              CW<span className="text-amber-300">Monitor</span>
+              CW<span className="text-[#ffffff]">Monitor</span>
             </span>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Notification bell */}
+            <button className="relative flex items-center justify-center rounded-full border border-white/30 bg-white/10 p-2 text-white transition-colors hover:border-white/50">
+              <Bell className="h-5 w-5" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+            </button>
+
             {/* Simulation toggle */}
             <button
               onClick={toggleSimulation}
