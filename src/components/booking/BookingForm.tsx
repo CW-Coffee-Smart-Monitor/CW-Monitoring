@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { INITIAL_TABLES } from '@/data/tables';
+import { useState } from 'react';
+import TablePicker from '@/components/booking/TablePicker';
 import type { BookingFormValues } from '@/types/booking';
+import type { TableState } from '@/types';
 
 interface BookingFormProps {
     onSubmit: (values: BookingFormValues) => void;
@@ -23,6 +24,8 @@ const MINUTE_OPTIONS = ['00', '30'];
 const initialForm: BookingFormValues = {
     branch: '',
     room: '',
+    tableId: null,
+    tableName: '',
     chairsNeeded: 1,
     date: '',
     time: '',
@@ -39,11 +42,6 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
 
     // Minimum date = today in YYYY-MM-DD (local time)
     const todayStr = new Date().toLocaleDateString('en-CA'); // 'en-CA' gives YYYY-MM-DD format
-
-    const roomOptions = useMemo(() => {
-        const uniqueZones = [...new Set(INITIAL_TABLES.map((table) => table.zone))];
-        return uniqueZones;
-    }, []);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -70,11 +68,20 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
         setForm((prev) => ({ ...prev, chairsNeeded: clamped }));
     };
 
+    const handleTableSelect = (table: TableState) => {
+        setForm((prev) => ({
+            ...prev,
+            tableId: table.id,
+            tableName: table.name,
+            room: table.zone,
+        }));
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!form.branch || !form.room || !form.date || !form.time || form.chairsNeeded < 1) {
-            alert('Mohon lengkapi data booking terlebih dahulu.');
+        if (!form.branch || !form.tableId || !form.date || !form.time || form.chairsNeeded < 1) {
+            alert('Mohon lengkapi data booking terlebih dahulu (cabang, meja, tanggal, dan waktu).');
             return;
         }
 
@@ -108,7 +115,8 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                 Isi data booking meja untuk pelanggan.
             </p>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-5 space-y-5">
+                {/* Pilih Cabang */}
                 <div>
                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                         Pilih Cabang
@@ -130,27 +138,26 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                     </select>
                 </div>
 
+                {/* Pilih Meja — Gojek style */}
                 <div>
-                    <label className="mb-2 block text-sm font-medium text-neutral-700">
-                        Ruangan
-                    </label>
-                    <select
-                        name="room"
-                        value={form.room}
-                        onChange={handleChange}
-                        className={`w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ${
-                            form.room === '' ? 'text-neutral-400' : 'text-neutral-900'
-                        }`}
-                    >
-                        <option value="" disabled hidden>Pilih ruangan</option>
-                        {roomOptions.map((room) => (
-                            <option key={room} value={room} className="text-neutral-900">
-                                {room}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="mb-2 flex items-center justify-between">
+                        <label className="text-sm font-medium text-neutral-700">
+                            Pilih Meja
+                        </label>
+                        {form.tableId && (
+                            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                Terpilih ✓
+                            </span>
+                        )}
+                    </div>
+                    <TablePicker
+                        selectedId={form.tableId}
+                        selectedName={form.tableName}
+                        onChange={handleTableSelect}
+                    />
                 </div>
 
+                {/* Jumlah Kursi */}
                 <div>
                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                         Jumlah Kursi yang Diperlukan
@@ -166,6 +173,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                     />
                 </div>
 
+                {/* Tanggal */}
                 <div>
                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                         Tanggal
@@ -182,6 +190,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                     />
                 </div>
 
+                {/* Waktu */}
                 <div>
                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                         Waktu
@@ -212,9 +221,9 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                             ))}
                         </select>
                     </div>
-
                 </div>
 
+                {/* Catatan */}
                 <div>
                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                         Catatan
@@ -223,7 +232,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                         name="note"
                         value={form.note}
                         onChange={handleChange}
-                        rows={4}
+                        rows={3}
                         placeholder="Contoh: dekat colokan, area tenang, untuk 4 orang"
                         className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none"
                     />
@@ -231,7 +240,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
 
                 <button
                     type="submit"
-                    className="w-full rounded-xl bg-amber-400 px-4 py-2 text-sm font-semibold text-neutral-900"
+                    className="w-full rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-semibold text-neutral-900 transition hover:bg-amber-300 active:scale-95"
                 >
                     Simpan Booking
                 </button>
