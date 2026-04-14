@@ -58,6 +58,9 @@ export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, 
   const isHighlighted = (t: TableState) => {
     if (!highlightFilter) return true;
     if (highlightFilter === 'Sofa') return t.zone === 'Sofa';
+    if (highlightFilter === 'Sofa2') return t.zone === 'Sofa' && [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32].includes(t.id);
+    if (highlightFilter === 'Sofa4') return t.zone === 'Sofa' && [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].includes(t.id);
+    if (highlightFilter === 'Colokan') return [1,3,5,12,13,14,15,16,23,24,25,26,27,28,29,30,31,32].includes(t.id);
     if (highlightFilter === 'Outdoor') return t.zone === 'Outdoor';
     if (highlightFilter === 'Counter') return t.zone === 'Counter';
     if (highlightFilter === 'Tenang') return t.facilities.some((f) => f.label === 'Tenang');
