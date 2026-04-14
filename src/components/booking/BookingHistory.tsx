@@ -20,7 +20,7 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; className: string }>
   completed: {
     label: 'Selesai',
     className: 'bg-blue-100 text-blue-700',
-  },
+  },//kemungkinan conflict dengan status completed, karena di booking.ts belum ada status completed
 };
 
 export default function BookingHistory({ bookings }: BookingHistoryProps) {

@@ -1,4 +1,4 @@
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed'; //kemungkinan confilict
 
 export interface BookingFormValues {
   branch: string;

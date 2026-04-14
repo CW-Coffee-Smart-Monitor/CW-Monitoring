@@ -13,7 +13,7 @@ export default function HistoryBookingPage() {
       date: '2026-01-10',
       time: '19:00',
       note: 'Dekat colokan',
-      status: 'completed',
+      status: 'completed', //kemuninan confilct
       createdAt: '2026-01-08 14:30',
     },
   ];
