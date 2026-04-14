@@ -55,12 +55,16 @@ function PreviewCard({ table, onClose }: { table: TableState; onClose: () => voi
   }, [onClose]);
 
   // Compute cropped viewBox centred on this table
+  // NOTE: pos.x/y is the CENTER of the table (same convention as FloorPlan.tsx on the Map page)
   const pos = TABLE_POSITIONS[table.id];
   const tw = pos?.w ?? 63;
   const th = pos?.h ?? 43;
-  // Centre of the table rect in SVG coords
-  const cx = pos ? pos.x + tw / 2 : SVG_W / 2;
-  const cy = pos ? pos.y + th / 2 : SVG_H / 2;
+  // pos.x/y = center, so the rect top-left is:
+  const cx = pos ? pos.x : SVG_W / 2;
+  const cy = pos ? pos.y : SVG_H / 2;
+  // top-left corner of the highlight rect
+  const tx = cx - tw / 2;
+  const ty = cy - th / 2;
   const cropSize = Math.max(tw, th) + CROP_PAD * 2;
   const vbX = Math.max(0, Math.min(cx - cropSize / 2, SVG_W - cropSize));
   const vbY = Math.max(0, Math.min(cy - cropSize / 2, SVG_H - cropSize));
@@ -74,8 +78,6 @@ function PreviewCard({ table, onClose }: { table: TableState; onClose: () => voi
     offline: '#9ca3af',
   };
   const highlightColor = STATUS_FILL[table.status] ?? '#f59e0b';
-  const tx = pos ? pos.x : cx - tw / 2;
-  const ty = pos ? pos.y : cy - th / 2;
 
   return (
     /* Full-screen backdrop — no gap on any device */
@@ -119,7 +121,7 @@ function PreviewCard({ table, onClose }: { table: TableState; onClose: () => voi
             {/* Background denah asli */}
             <image href="/Frame 112.svg" x="0" y="0" width={SVG_W} height={SVG_H} />
 
-            {/* Dim semua meja lain */}
+            {/* Dim semua meja lain — pos.x/y adalah CENTER, jadi rect dari center - half */}
             {INITIAL_TABLES.map((t) => {
               if (t.id === table.id) return null;
               const p = TABLE_POSITIONS[t.id];
@@ -129,7 +131,7 @@ function PreviewCard({ table, onClose }: { table: TableState; onClose: () => voi
               return (
                 <rect
                   key={t.id}
-                  x={p.x} y={p.y} width={w} height={h}
+                  x={p.x - w / 2} y={p.y - h / 2} width={w} height={h}
                   fill="#000" opacity={0.15} rx={4}
                 />
               );
