@@ -3,6 +3,8 @@ export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 export interface BookingFormValues {
   branch: string;
   room: string;
+  tableId: number | null;
+  tableName: string;
   chairsNeeded: number;
   date: string;
   time: string;

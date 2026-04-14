@@ -13,6 +13,8 @@ export default function BookingPage() {
       room: 'Sofa',
       chairsNeeded: 3,
       date: '2026-01-10',
+      tableId: 1,
+      tableName: 'Meja 1',
       time: '19:00',
       note: 'Dekat colokan',
       status: 'confirmed',
@@ -30,11 +32,10 @@ export default function BookingPage() {
           className="flex items-center gap-1.5 rounded-full bg-amber-400 px-3 py-1.5 text-sm font-semibold text-neutral-900 transition-opacity hover:opacity-80 active:scale-95"
         >
           <Plus className="h-4 w-4" strokeWidth={2.5} />
-          Buat Reservasi
         </Link>
       </div>
 
       <BookingHistory bookings={bookings} />
     </section>
   );
-}
+}

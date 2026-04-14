@@ -29,3 +29,15 @@ body {
   width: 0;
   height: 0;
 }
+
+/* Floating card pop-in animation */
+@keyframes fadeScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
