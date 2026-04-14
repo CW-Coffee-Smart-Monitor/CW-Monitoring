@@ -14,10 +14,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <TableProvider>
       <SimulatorRunner />
       <Header />
-      <main className="mx-auto w-full max-w-md flex-1 px-4 pb-20 pt-4">
+      <main className="mx-auto w-full max-w-md flex-1 px-4 pb-8 pt-4">
         {children}
       </main>
-      <BottomNav />
+      {/* <BottomNav /> */}
     </TableProvider>
   );
 }
