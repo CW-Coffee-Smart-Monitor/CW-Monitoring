@@ -10,13 +10,12 @@ import { Sparkles, ChevronDown, MapPin } from 'lucide-react';
 import { useTableContext } from '@/context/TableContext';
 import { TABLE_ROOMS } from '@/data/tables';
 import FloorPlan from '@/components/map/FloorPlan';
-import FilterChips from '@/components/map/FilterChips';
 import MapLegend from '@/components/map/MapLegend';
 
 const QUICK_FILTERS = [
-  { label: 'Mau ngecas', emoji: '🔌', filterKey: 'Colokan' },
-  { label: 'Mau sepi',   emoji: '🤫', filterKey: 'Tenang' },
-  { label: 'Mau sofa',  emoji: '🛋️', filterKey: 'Sofa'   },
+  { label: 'Ngecas',  emoji: '🔌', filterKey: 'Colokan' },
+  { label: 'Sofa 2',  emoji: '👥', filterKey: 'Sofa2'  },
+  { label: 'Sofa 4',  emoji: '🛋️', filterKey: 'Sofa4'  },
 ];
 
 const ROOMS = [
@@ -67,6 +66,9 @@ export default function MapPage() {
       if (t.status !== 'available') return false;
       if (!activeFilter) return true;
       if (activeFilter === 'Sofa') return t.zone === 'Sofa';
+      if (activeFilter === 'Sofa2') return t.zone === 'Sofa' && [16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32].includes(t.id);
+      if (activeFilter === 'Sofa4') return t.zone === 'Sofa' && [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].includes(t.id);
+      if (activeFilter === 'Colokan') return [1,3,5,12,13,14,15,16,23,24,25,26,27,28,29,30,31,32].includes(t.id);
       if (activeFilter === 'Outdoor') return t.zone === 'Outdoor';
       if (activeFilter === 'Counter') return t.zone === 'Counter';
       if (activeFilter === 'Tenang') return t.facilities.some((f) => f.label === 'Tenang');
@@ -195,8 +197,7 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* Filter chips (detail) */}
-      <FilterChips activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+
 
       {/* Rekomendasikan Meja */}
       <button

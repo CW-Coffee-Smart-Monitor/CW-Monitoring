@@ -22,6 +22,7 @@ import React, {
 import { TableState, SensorPayload, DashboardSummary, BookingRecord } from '@/types';
 import { INITIAL_TABLES } from '@/data/tables';
 import { CONFIG } from '@/lib/config';
+import { subscribeToTables, saveTableStatus, saveBookingRecord, TableDoc } from '@/lib/firestoreService';
 
 // ──────────────────────────── Types ────────────────────────────
 
@@ -40,7 +41,8 @@ type Action =
   | { type: 'TICK' }
   | { type: 'GHOST_CONFIRM'; tableId: number }
   | { type: 'CHECKOUT'; tableId: number; record: BookingRecord }
-  | { type: 'DEMO_SET'; tableId: number; status: TableState['status'] };
+  | { type: 'DEMO_SET'; tableId: number; status: TableState['status'] }
+  | { type: 'FIRESTORE_SYNC'; updates: Record<number, TableDoc> };
 
 interface State {
   tables: TableState[];
@@ -156,6 +158,26 @@ function tableReducer(state: State, action: Action): State {
       };
     }
 
+    case 'FIRESTORE_SYNC': {
+      return {
+        ...state,
+        tables: state.tables.map((t) => {
+          const remote = action.updates[t.id];
+          if (!remote) return t;
+          return {
+            ...t,
+            status:        remote.status,
+            uid:           remote.uid,
+            isOccupied:    remote.isOccupied,
+            distance:      remote.distance,
+            isGhostBooking: remote.isGhostBooking,
+            checkInTime:   remote.checkInTime,
+            elapsedSeconds: remote.elapsedSeconds,
+          };
+        }),
+      };
+    }
+
     default:
       return state;
   }
@@ -228,6 +250,43 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
     const interval = setInterval(() => dispatch({ type: 'TICK' }), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // ── Firestore real-time listener ──────────────────────────────
+  useEffect(() => {
+    const unsub = subscribeToTables((updates) => {
+      dispatch({ type: 'FIRESTORE_SYNC', updates });
+    });
+    return () => unsub();
+  }, []);
+
+  // ── Write to Firestore when table state changes ───────────────
+  const prevTablesRef = useRef<TableState[]>([]);
+  useEffect(() => {
+    const prev = prevTablesRef.current;
+    state.tables.forEach((table) => {
+      const old = prev.find((t) => t.id === table.id);
+      const changed =
+        !old ||
+        old.status !== table.status ||
+        old.isOccupied !== table.isOccupied ||
+        old.uid !== table.uid ||
+        old.isGhostBooking !== table.isGhostBooking;
+      if (changed) {
+        saveTableStatus(table).catch(console.error);
+      }
+    });
+    prevTablesRef.current = state.tables;
+  }, [state.tables]);
+
+  // ── Write booking records to Firestore on checkout ────────────
+  const prevHistoryLenRef = useRef(0);
+  useEffect(() => {
+    if (state.bookingHistory.length > prevHistoryLenRef.current) {
+      const newest = state.bookingHistory[0];
+      saveBookingRecord(newest).catch(console.error);
+    }
+    prevHistoryLenRef.current = state.bookingHistory.length;
+  }, [state.bookingHistory]);
 
   // Compute dashboard summary
   const summary: DashboardSummary = React.useMemo(() => {
