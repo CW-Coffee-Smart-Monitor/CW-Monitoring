@@ -9,6 +9,7 @@ export interface BookingFormValues {
   date: string;
   time: string;
   note: string;
+  paymentProof: File | null;
 }
 
 export interface BookingItem extends BookingFormValues {

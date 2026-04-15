@@ -19,6 +19,7 @@ export default function BookingPage() {
       note: 'Dekat colokan',
       status: 'confirmed',
       createdAt: '2026-01-08 14:30',
+      paymentProof: null,
     },
   ];
 
