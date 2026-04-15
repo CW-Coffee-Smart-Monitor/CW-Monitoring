@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Upload, X, AlertCircle } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Upload, X, AlertCircle, Clock3 } from 'lucide-react';
 import TablePicker from '@/components/booking/TablePicker';
 import type { BookingFormValues } from '@/types/booking';
 import type { TableState } from '@/types';
@@ -16,18 +16,17 @@ const BRANCH_OPTIONS = [
     'CW Coffee Timur',
 ];
 
-/** Cafe buka 24 jam, menit setiap 30 menit */
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) =>
     String(i).padStart(2, '0')
 );
-const MINUTE_OPTIONS = ['00', '30'];
+
+const MINUTE_OPTIONS = ['00', '15', '30', '45'];
 
 const initialForm: BookingFormValues = {
     branch: '',
     room: '',
     tableId: null,
     tableName: '',
-    chairsNeeded: 1,
     date: '',
     time: '',
     note: '',
@@ -36,14 +35,13 @@ const initialForm: BookingFormValues = {
 
 export default function BookingForm({ onSubmit }: BookingFormProps) {
     const [form, setForm] = useState<BookingFormValues>(initialForm);
-    // Separate raw string state for the chairs input to allow free typing
-    const [chairsInput, setChairsInput] = useState('1');
-    // Separate hour/minute selects to avoid browser manual-typing quirks on type="time"
-    const [hourInput, setHourInput] = useState('');
-    const [minuteInput, setMinuteInput] = useState('');
+    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+    const [selectedHour, setSelectedHour] = useState('');
+    const [selectedMinute, setSelectedMinute] = useState('');
     // Payment proof file + preview URL
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const timePickerRef = useRef<HTMLDivElement>(null);
 
     // Minimum date = today in YYYY-MM-DD (local time)
     const todayStr = new Date().toLocaleDateString('en-CA'); // 'en-CA' gives YYYY-MM-DD format
@@ -55,24 +53,16 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
         setForm((prev) => ({ ...prev, [name]: value }));
     };
 
-    /** Allow free typing; only update form.chairsNeeded when value is a valid number >= 1 */
-    const handleChairsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const raw = e.target.value;
-        setChairsInput(raw);
-        const parsed = parseInt(raw, 10);
-        if (!isNaN(parsed) && parsed >= 1) {
-            setForm((prev) => ({ ...prev, chairsNeeded: parsed }));
-        }
-    };
+    useEffect(() => {
+        const handlePointerDown = (event: MouseEvent) => {
+            if (!timePickerRef.current?.contains(event.target as Node)) {
+                setIsTimePickerOpen(false);
+            }
+        };
 
-    /** On blur: if empty or invalid, snap back to minimum 1 */
-    const handleChairsBlur = () => {
-        const parsed = parseInt(chairsInput, 10);
-        const clamped = isNaN(parsed) || parsed < 1 ? 1 : parsed;
-        setChairsInput(String(clamped));
-        setForm((prev) => ({ ...prev, chairsNeeded: clamped }));
-    };
-
+        document.addEventListener('mousedown', handlePointerDown);
+        return () => document.removeEventListener('mousedown', handlePointerDown);
+    }, []);
     const handleTableSelect = (table: TableState) => {
         setForm((prev) => ({
             ...prev,
@@ -85,7 +75,6 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0] ?? null;
         if (!file) return;
-        // Revoke previous object URL to avoid memory leak
         if (previewUrl) URL.revokeObjectURL(previewUrl);
         setPreviewUrl(URL.createObjectURL(file));
         setForm((prev) => ({ ...prev, paymentProof: file }));
@@ -101,7 +90,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!form.branch || !form.tableId || !form.date || !form.time || form.chairsNeeded < 1) {
+        if (!form.branch || !form.tableId || !form.date || !form.time) {
             alert('Mohon lengkapi data booking terlebih dahulu (cabang, meja, tanggal, dan waktu).');
             return;
         }
@@ -113,26 +102,50 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
 
         onSubmit(form);
         setForm(initialForm);
-        setChairsInput('1');
-        setHourInput('');
-        setMinuteInput('');
+        setSelectedHour('');
+        setSelectedMinute('');
+        setIsTimePickerOpen(false);
         handleRemoveFile();
     };
 
-    /** Sync jam + menit ke form.time sebagai "HH:MM" */
-    const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const h = e.target.value;
-        setHourInput(h);
-        const m = minuteInput || '00';
-        setForm((prev) => ({ ...prev, time: h ? `${h}:${m}` : '' }));
+    const handleHourSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const nextHour = e.target.value;
+        setSelectedHour(nextHour);
+
+        setForm((prev) => ({
+            ...prev,
+            time: nextHour && selectedMinute ? `${nextHour}:${selectedMinute}` : '',
+        }));
     };
 
-    const handleMinuteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const m = e.target.value;
-        setMinuteInput(m);
-        if (hourInput) {
-            setForm((prev) => ({ ...prev, time: `${hourInput}:${m}` }));
+    const handleMinuteSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const nextMinute = e.target.value;
+        setSelectedMinute(nextMinute);
+
+        if (selectedHour && nextMinute) {
+            setForm((prev) => ({ ...prev, time: `${selectedHour}:${nextMinute}` }));
+            setIsTimePickerOpen(false);
+            return;
         }
+
+        setForm((prev) => ({ ...prev, time: '' }));
+    };
+
+    const handleClearTime = () => {
+        setSelectedHour('');
+        setSelectedMinute('');
+        setForm((prev) => ({ ...prev, time: '' }));
+        setIsTimePickerOpen(false);
+    };
+
+    const handleToggleTimePicker = () => {
+        if (!isTimePickerOpen) {
+            const [hour = '', minute = ''] = form.time.split(':');
+            setSelectedHour(hour);
+            setSelectedMinute(minute);
+        }
+
+        setIsTimePickerOpen((prev) => !prev);
     };
 
     return (
@@ -181,7 +194,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                     </select>
                 </div>
 
-                {/* Pilih Meja — Gojek style */}
+                {/* Pilih Meja */}
                 <div>
                     <div className="mb-2 flex items-center justify-between">
                         <label className="text-sm font-medium text-neutral-700">
@@ -197,22 +210,6 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                         selectedId={form.tableId}
                         selectedName={form.tableName}
                         onChange={handleTableSelect}
-                    />
-                </div>
-
-                {/* Jumlah Kursi */}
-                <div>
-                    <label className="mb-2 block text-sm font-medium text-neutral-700">
-                        Jumlah Kursi yang Diperlukan
-                    </label>
-                    <input
-                        type="number"
-                        inputMode="numeric"
-                        name="chairsNeeded"
-                        value={chairsInput}
-                        onChange={handleChairsChange}
-                        onBlur={handleChairsBlur}
-                        className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none"
                     />
                 </div>
 
@@ -238,31 +235,81 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                     <label className="mb-2 block text-sm font-medium text-neutral-700">
                         Waktu
                     </label>
-                    <div className="flex gap-2">
-                        <select
-                            value={hourInput}
-                            onChange={handleHourChange}
-                            className={`w-1/2 rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ${
-                                hourInput === '' ? 'text-neutral-400' : 'text-neutral-900'
-                            }`}
+                    <div ref={timePickerRef} className="relative">
+                        <button
+                            type="button"
+                            onClick={handleToggleTimePicker}
+                            className={`flex w-full items-center rounded-xl border border-neutral-300 bg-white px-3 py-2 text-left text-sm outline-none transition ${
+                                form.time === '' ? 'text-neutral-400' : 'text-neutral-900'
+                            } ${isTimePickerOpen ? 'border-amber-400 ring-2 ring-amber-100' : ''}`}
+                            aria-haspopup="dialog"
+                            aria-expanded={isTimePickerOpen}
+                            aria-label="Pilih waktu reservasi"
                         >
-                            <option value="" disabled hidden>HH</option>
-                            {HOUR_OPTIONS.map((h) => (
-                                <option key={h} value={h} className="text-neutral-900">{h}</option>
-                            ))}
-                        </select>
-                        <select
-                            value={minuteInput}
-                            onChange={handleMinuteChange}
-                            className={`w-1/2 rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ${
-                                minuteInput === '' ? 'text-neutral-400' : 'text-neutral-900'
-                            }`}
-                        >
-                            <option value="" disabled hidden>MM</option>
-                            {MINUTE_OPTIONS.map((m) => (
-                                <option key={m} value={m} className="text-neutral-900">{m}</option>
-                            ))}
-                        </select>
+                            <span>{form.time || 'HH:mm'}</span>
+                            <Clock3 className="ml-auto h-4 w-4 shrink-0 text-neutral-400" />
+                        </button>
+
+                        {isTimePickerOpen && (
+                            <div className="absolute left-0 top-[calc(100%+8px)] z-20 w-full rounded-2xl border border-neutral-200 bg-white p-3 shadow-lg">
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="mb-1.5 block text-xs font-medium text-neutral-600">
+                                            Jam
+                                        </label>
+                                        <select
+                                            value={selectedHour}
+                                            onChange={handleHourSelect}
+                                            className={`w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ${
+                                                selectedHour === '' ? 'text-neutral-400' : 'text-neutral-900'
+                                            }`}
+                                        >
+                                            <option value="" disabled>Pilih jam</option>
+                                            {HOUR_OPTIONS.map((hour) => (
+                                                <option key={hour} value={hour}>
+                                                    {hour}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1.5 block text-xs font-medium text-neutral-600">
+                                            Menit
+                                        </label>
+                                        <select
+                                            value={selectedMinute}
+                                            onChange={handleMinuteSelect}
+                                            className={`w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm outline-none ${
+                                                selectedMinute === '' ? 'text-neutral-400' : 'text-neutral-900'
+                                            }`}
+                                        >
+                                            <option value="" disabled>Pilih menit</option>
+                                            {MINUTE_OPTIONS.map((minute) => (
+                                                <option key={minute} value={minute}>
+                                                    {minute}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="mt-3 flex items-center justify-between">
+                                    <p className="text-xs text-neutral-500">
+                                        Format 24 jam, tanpa AM/PM.
+                                    </p>
+                                    {form.time && (
+                                        <button
+                                            type="button"
+                                            onClick={handleClearTime}
+                                            className="text-xs font-medium text-amber-700 transition hover:text-amber-800"
+                                        >
+                                            Reset
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -310,7 +357,6 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                         </label>
                     ) : (
                         <div className="relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={previewUrl}
                                 alt="Preview bukti pembayaran"

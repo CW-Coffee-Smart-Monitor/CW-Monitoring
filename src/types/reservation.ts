@@ -14,8 +14,6 @@ export interface Reservation {
   createdAt: string;        // ISO string
   expiresAt: number;        // unix ms = arrivalTime + toleranceMinutes
   source: 'map' | 'form';
-  // optional fields only for full booking form
   branch?: string;
   note?: string;
-  chairsNeeded?: number;
 }

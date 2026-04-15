@@ -13,7 +13,6 @@ export default function HistoryBookingPage() {
       id: "BK-001",
       branch: "CW Coffee Pusat",
       room: "Sofa",
-      chairsNeeded: 3,
       date: "2026-01-10",
       tableId: 1,
       tableName: "Meja 1",
@@ -21,6 +20,7 @@ export default function HistoryBookingPage() {
       note: "Dekat colokan",
       status: "completed",
       createdAt: "2026-01-08 14:30",
+      paymentProof: null,
     },
   ];
 
