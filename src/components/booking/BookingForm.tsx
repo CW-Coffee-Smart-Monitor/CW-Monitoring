@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { Upload, X, AlertCircle } from 'lucide-react';
 import TablePicker from '@/components/booking/TablePicker';
 import type { BookingFormValues } from '@/types/booking';
 import type { TableState } from '@/types';
@@ -30,6 +31,7 @@ const initialForm: BookingFormValues = {
     date: '',
     time: '',
     note: '',
+    paymentProof: null,
 };
 
 export default function BookingForm({ onSubmit }: BookingFormProps) {
@@ -39,6 +41,9 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
     // Separate hour/minute selects to avoid browser manual-typing quirks on type="time"
     const [hourInput, setHourInput] = useState('');
     const [minuteInput, setMinuteInput] = useState('');
+    // Payment proof file + preview URL
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Minimum date = today in YYYY-MM-DD (local time)
     const todayStr = new Date().toLocaleDateString('en-CA'); // 'en-CA' gives YYYY-MM-DD format
@@ -77,6 +82,22 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
         }));
     };
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0] ?? null;
+        if (!file) return;
+        // Revoke previous object URL to avoid memory leak
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(URL.createObjectURL(file));
+        setForm((prev) => ({ ...prev, paymentProof: file }));
+    };
+
+    const handleRemoveFile = () => {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        setPreviewUrl(null);
+        setForm((prev) => ({ ...prev, paymentProof: null }));
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -85,11 +106,17 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
             return;
         }
 
+        if (!form.paymentProof) {
+            alert('Mohon upload bukti pembayaran DP terlebih dahulu.');
+            return;
+        }
+
         onSubmit(form);
         setForm(initialForm);
         setChairsInput('1');
         setHourInput('');
         setMinuteInput('');
+        handleRemoveFile();
     };
 
     /** Sync jam + menit ke form.time sebagai "HH:MM" */
@@ -114,6 +141,22 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
             <p className="mt-1 text-sm text-neutral-500">
                 Isi data booking meja untuk pelanggan.
             </p>
+
+            {/* Banner info DP */}
+            <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                <div>
+                    <p className="text-sm font-semibold text-amber-800">DP Reservasi Rp 50.000</p>
+                    <p className="mt-0.5 text-xs text-amber-700">
+                        Lakukan pembayaran DP sebesar <strong>Rp 50.000</strong> ke rekening berikut, lalu upload bukti transfer di bawah.
+                    </p>
+                    <div className="mt-2 rounded-lg bg-white px-3 py-2 text-xs text-neutral-700 shadow-sm ring-1 ring-amber-200">
+                        <span className="font-medium">BCA</span> · <span className="font-mono tracking-wide">1234-5678-90</span>
+                        <br />
+                        a.n. <span className="font-medium">CW Coffee</span>
+                    </div>
+                </div>
+            </div>
 
             <form onSubmit={handleSubmit} className="mt-5 space-y-5">
                 {/* Pilih Cabang */}
@@ -236,6 +279,56 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                         placeholder="Contoh: dekat colokan, area tenang, untuk 4 orang"
                         className="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 outline-none"
                     />
+                </div>
+
+                {/* Upload Bukti Pembayaran DP */}
+                <div>
+                    <label className="mb-2 block text-sm font-medium text-neutral-700">
+                        Bukti Pembayaran DP <span className="text-red-500">*</span>
+                    </label>
+                    <p className="mb-2 text-xs text-neutral-500">
+                        Upload screenshot/foto bukti transfer DP Rp 50.000.
+                    </p>
+
+                    {/* Drop zone / upload area */}
+                    {!previewUrl ? (
+                        <label
+                            htmlFor="paymentProof"
+                            className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-neutral-300 bg-neutral-50 py-6 text-center transition hover:border-amber-400 hover:bg-amber-50"
+                        >
+                            <Upload className="h-6 w-6 text-neutral-400" />
+                            <span className="text-sm font-medium text-neutral-600">Pilih file gambar</span>
+                            <span className="text-xs text-neutral-400">JPG, PNG, WEBP · Maks. 5 MB</span>
+                            <input
+                                ref={fileInputRef}
+                                id="paymentProof"
+                                type="file"
+                                accept="image/*"
+                                className="sr-only"
+                                onChange={handleFileChange}
+                            />
+                        </label>
+                    ) : (
+                        <div className="relative overflow-hidden rounded-xl border border-neutral-200 bg-neutral-50">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                                src={previewUrl}
+                                alt="Preview bukti pembayaran"
+                                className="max-h-56 w-full object-contain"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleRemoveFile}
+                                className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-neutral-900/70 text-white backdrop-blur-sm transition hover:bg-red-600"
+                                aria-label="Hapus gambar"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                            <p className="truncate px-3 py-2 text-xs text-neutral-500">
+                                {form.paymentProof?.name}
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <button
