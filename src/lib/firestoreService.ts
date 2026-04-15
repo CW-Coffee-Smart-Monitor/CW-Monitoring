@@ -14,10 +14,14 @@ import {
   setDoc,
   addDoc,
   serverTimestamp,
+  query,
+  where,
+  orderBy,
   Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { TableState, BookingRecord } from '@/types';
+import type { Reservation, ReservationStatus } from '@/types/reservation';
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -83,4 +87,68 @@ export async function saveBookingRecord(record: BookingRecord): Promise<void> {
     ...record,
     createdAt: serverTimestamp(),
   });
+}
+
+// ─── Reservations ──────────────────────────────────────────────
+
+/**
+ * Simpan reservasi baru ke koleksi `reservations`.
+ * Mengembalikan document ID yang dibuat Firestore.
+ */
+export async function saveReservation(
+  data: Omit<Reservation, 'id'>
+): Promise<string> {
+  const ref = await addDoc(collection(db, 'reservations'), {
+    ...data,
+    createdAt: new Date().toISOString(),
+  });
+  return ref.id;
+}
+
+/**
+ * Langganan real-time ke semua reservasi berstatus 'pending'.
+ */
+export function subscribeToActiveReservations(
+  callback: (reservations: Reservation[]) => void
+): Unsubscribe {
+  const ref = query(
+    collection(db, 'reservations'),
+    where('status', '==', 'pending')
+  );
+  return onSnapshot(ref, (snapshot) => {
+    const items: Reservation[] = [];
+    snapshot.forEach((docSnap) => {
+      items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
+    });
+    callback(items);
+  });
+}
+
+/**
+ * Langganan real-time ke semua reservasi (untuk halaman riwayat).
+ */
+export function subscribeToAllReservations(
+  callback: (reservations: Reservation[]) => void
+): Unsubscribe {
+  const ref = query(
+    collection(db, 'reservations'),
+    orderBy('createdAt', 'desc')
+  );
+  return onSnapshot(ref, (snapshot) => {
+    const items: Reservation[] = [];
+    snapshot.forEach((docSnap) => {
+      items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
+    });
+    callback(items);
+  });
+}
+
+/**
+ * Update status sebuah reservasi.
+ */
+export async function updateReservationStatus(
+  id: string,
+  status: ReservationStatus
+): Promise<void> {
+  await setDoc(doc(db, 'reservations', id), { status }, { merge: true });
 }

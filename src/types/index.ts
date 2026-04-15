@@ -4,7 +4,7 @@
  */
 
 /** Possible visual statuses for a table */
-export type TableStatus = 'available' | 'occupied' | 'warning' | 'offline';
+export type TableStatus = 'available' | 'occupied' | 'warning' | 'offline' | 'reserved';
 
 /** Raw sensor payload from ESP32 */
 export interface SensorPayload {
@@ -29,6 +29,10 @@ export interface TableState {
   facilities: TableFacility[];
   zone: string;
   seatType: string;
+  // Reservation info (set by UI, not by ESP32)
+  reservationId?: string | null;
+  reservedBy?: string | null;
+  reservedUntil?: number | null; // unix ms — tolerance expires at this time
 }
 
 /** Facility tags attached to each table */
