@@ -36,79 +36,87 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-200 to-neutral-300 p-4">
-      <div className="w-full max-w-md space-y-6">
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-300 px-4">
+    <div className="w-full max-w-md space-y-6">
 
-        {/* Logo */}
-        <div className="flex justify-start">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-md">
-            ☕
-          </div>
+      {/* Icon */}
+      <div className="flex justify-start">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-black text-white shadow-lg text-xl">
+          ☕
         </div>
-
-        {/* Title */}
-        <div>
-          <h1 className="text-2xl font-bold text-neutral-900">
-            Selamat <br /> Datang Kembali!
-          </h1>
-          <p className="mt-2 text-sm text-neutral-600">
-            Masuk untuk memantau kursi dan menikmati kopi favoritmu.
-          </p>
-        </div>
-
-        {/* Error */}
-        {error && (
-          <p className="text-sm text-red-500 bg-red-50 p-2 rounded-lg">
-            {error}
-          </p>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-
-          {/* Email */}
-          <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 border border-neutral-200">
-            <Mail className="h-5 w-5 text-neutral-400" />
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              required
-              className="w-full bg-transparent text-sm outline-none"
-            />
-          </div>
-
-          {/* Password */}
-          <div className="flex items-center gap-3 rounded-xl bg-white px-4 py-3 border border-neutral-200">
-            <Lock className="h-5 w-5 text-neutral-400" />
-            <input
-              type="password"
-              name="password"
-              placeholder="Kata Sandi"
-              required
-              className="w-full bg-transparent text-sm outline-none"
-            />
-          </div>
-
-          {/* Button */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-neutral-900 py-3 text-sm font-semibold text-white hover:opacity-90 active:scale-95 transition disabled:opacity-50"
-          >
-            <LogIn className="h-4 w-4" strokeWidth={2.5} />
-            {isLoading ? 'Loading...' : 'Masuk'}
-          </button>
-
-          {/* Register */}
-          <p className="text-center text-sm text-neutral-500">
-            Belum memiliki akun?{' '}
-            <Link href="/auth/register" className="font-medium text-neutral-900">
-              Daftar
-            </Link>
-          </p>
-        </form>
       </div>
+
+      {/* Title */}
+      <div>
+        <h1 className="text-4xl font-bold text-neutral-900 leading-tight">
+          Selamat Datang <br /> Kembali!
+        </h1>
+        <p className="mt-3 text-neutral-600">
+          Masuk untuk cek ketersediaan meja, promo, dan mulai hari produktifmu.
+        </p>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <p className="text-sm text-red-500 bg-red-50 p-3 rounded-xl">
+          {error}
+        </p>
+      )}
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Email */}
+        <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-sm border border-neutral-200">
+          <Mail className="h-5 w-5 text-neutral-400" />
+          <input
+            type="text"
+            name="email"
+            placeholder="Email / Nomor HP"
+            required
+            className="w-full bg-transparent outline-none text-sm"
+          />
+        </div>
+
+        {/* Password */}
+        <div className="flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-sm border border-neutral-200">
+          <Lock className="h-5 w-5 text-neutral-400" />
+          <input
+            type="password"
+            name="password"
+            placeholder="Kata Sandi"
+            required
+            className="w-full bg-transparent outline-none text-sm"
+          />
+        </div>
+
+        {/* Options */}
+        <div className="flex justify-between text-sm text-neutral-600">
+          <span className="cursor-pointer">Ingat Saya</span>
+          <span className="cursor-pointer font-medium text-neutral-900">
+            Lupa Sandi?
+          </span>
+        </div>
+
+        {/* Button */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full flex items-center justify-center gap-2 rounded-2xl bg-black py-4 text-sm font-semibold text-white shadow-md hover:opacity-90 active:scale-95 transition disabled:opacity-50"
+        >
+          <LogIn className="h-4 w-4" />
+          {isLoading ? 'Loading...' : 'Masuk →'}
+        </button>
+
+        {/* Register */}
+        <p className="text-center text-sm text-neutral-600">
+          Belum punya akun?{" "}
+          <Link href="/auth/register" className="font-semibold text-black">
+            Daftar Sekarang
+          </Link>
+        </p>
+      </form>
     </div>
-  );
+  </div>
+);
 }
