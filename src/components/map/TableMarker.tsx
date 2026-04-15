@@ -21,6 +21,7 @@ const STATUS_COLORS: Record<TableStatus, { fill: string; stroke: string; text: s
   occupied:  { fill: '#ffffff', stroke: '#EF4444', text: '#DC2626', strokeWidth: 3 },
   warning:   { fill: '#ffffff', stroke: '#F59E0B', text: '#D97706', strokeWidth: 3 },
   offline:   { fill: '#f5f5f5', stroke: '#9CA3AF', text: '#6B7280', strokeWidth: 2 },
+  reserved:  { fill: '#ffffff', stroke: '#F59E0B', text: '#D97706', strokeWidth: 3 },
 };
 
 export default function TableMarker({ name, status, x, y, onTap }: TableMarkerProps) {

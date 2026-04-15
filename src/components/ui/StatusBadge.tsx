@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 interface StatusBadgeProps {
   label: string;
-  variant: 'available' | 'occupied' | 'warning' | 'offline' | 'info';
+  variant: 'available' | 'occupied' | 'warning' | 'offline' | 'info' | 'reserved';
   pulse?: boolean;
 }
 
@@ -18,6 +18,7 @@ const VARIANTS: Record<StatusBadgeProps['variant'], string> = {
   warning: 'bg-red-500/20 text-red-400 border-red-500/30',
   offline: 'bg-neutral-600/20 text-neutral-400 border-neutral-600/30',
   info: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  reserved: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
 };
 
 export default function StatusBadge({ label, variant, pulse }: StatusBadgeProps) {
