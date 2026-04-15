@@ -1,30 +1,75 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import BookingHistory from '@/components/booking/BookingHistory';
 import type { BookingItem } from '@/types/booking';
+import type { Reservation } from '@/types/reservation';
+import {
+  getFirestoreErrorMessage,
+  subscribeToAllReservations,
+} from '@/lib/firestoreService';
 
 export default function BookingPage() {
-  const bookings: BookingItem[] = [
-    {
-      id: 'BK-001',
-      branch: 'CW Coffee Pusat',
-      room: 'Sofa',
-      date: '2026-01-10',
-      tableId: 1,
-      tableName: 'Meja 1',
-      time: '19:00',
-      note: 'Dekat colokan',
-      status: 'confirmed',
-      createdAt: '2026-01-08 14:30',
-      paymentProof: null,
-    },
-  ];
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.sessionStorage.getItem('booking-success-toast') ?? '';
+  });
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAllReservations(
+      (items) => {
+        setReservations(items);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('LOAD RESERVATIONS ERROR:', error);
+        setReservations([]);
+        setErrorMessage(
+          getFirestoreErrorMessage(error, 'Histori reservasi tidak dapat dimuat saat ini.')
+        );
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    window.sessionStorage.removeItem('booking-success-toast');
+
+    const timeout = window.setTimeout(() => {
+      setToastMessage('');
+    }, 3000);
+
+    return () => window.clearTimeout(timeout);
+  }, [toastMessage]);
+
+  const bookings = useMemo<BookingItem[]>(
+    () =>
+      reservations.map((reservation) => ({
+        id: reservation.id,
+        branch: reservation.branch ?? 'CW Coffee',
+        room: reservation.room ?? '-',
+        date: reservation.date,
+        tableId: reservation.tableId,
+        tableName: reservation.tableName,
+        time: reservation.arrivalTime,
+        note: reservation.note ?? '',
+        status: reservation.status === 'cancelled' ? 'cancelled' : reservation.status,
+        createdAt: reservation.createdAt,
+        paymentProof: null,
+      })),
+    [reservations]
+  );
 
   return (
     <section className="space-y-4">
-      {/* Page header — title + CTA button */}
       <div className="flex items-center justify-between gap-3">
         <h1 className="text-lg font-bold text-neutral-900">Reservasi Saya</h1>
         <Link
@@ -35,7 +80,23 @@ export default function BookingPage() {
         </Link>
       </div>
 
-      <BookingHistory bookings={bookings} />
+      {toastMessage && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          {toastMessage}
+        </div>
+      )}
+
+      {loading ? (
+        <div className="rounded-2xl border border-neutral-200 bg-white p-4 text-sm text-neutral-500">
+          Memuat histori reservasi...
+        </div>
+      ) : errorMessage ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          {errorMessage}
+        </div>
+      ) : (
+        <BookingHistory bookings={bookings} />
+      )}
     </section>
   );
 }
