@@ -7,7 +7,7 @@ import type { BookingFormValues } from '@/types/booking';
 import type { TableState } from '@/types';
 
 interface BookingFormProps {
-    onSubmit: (values: BookingFormValues) => void;
+    onSubmit: (values: BookingFormValues) => void | Promise<void>;
 }
 
 const BRANCH_OPTIONS = [

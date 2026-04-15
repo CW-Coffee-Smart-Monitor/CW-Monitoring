@@ -1,10 +1,6 @@
 /**
  * firestoreService.ts
  * Semua operasi baca/tulis Firestore untuk CW-Monitoring.
- *
- * Koleksi:
- *   tables/{tableId}   — status real-time setiap sofa
- *   bookings/{id}      — riwayat checkout
  */
 
 import {
@@ -23,7 +19,8 @@ import { db } from './firebase';
 import { TableState, BookingRecord } from '@/types';
 import type { Reservation, ReservationStatus } from '@/types/reservation';
 
-// ─── Types ────────────────────────────────────────────────────
+const RESERVATIONS_COLLECTION = 'reservations';
+type ReservationListenerError = (error: unknown) => void;
 
 /** Subset dari TableState yang disimpan di Firestore */
 export interface TableDoc {
@@ -36,31 +33,46 @@ export interface TableDoc {
   elapsedSeconds: number;
 }
 
+function sortReservationsByCreatedAt(items: Reservation[]): Reservation[] {
+  return [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export function getFirestoreErrorMessage(
+  error: unknown,
+  fallback = 'Terjadi kesalahan saat mengakses data reservasi.'
+): string {
+  const code =
+    typeof error === 'object' && error && 'code' in error
+      ? String((error as { code?: unknown }).code)
+      : '';
+
+  if (code === 'permission-denied') {
+    return 'Akses ke data reservasi ditolak. Pastikan Anda sudah login dan Firestore rules mengizinkan operasi ini.';
+  }
+
+  if (code === 'unauthenticated') {
+    return 'Anda perlu login terlebih dahulu untuk mengakses data reservasi.';
+  }
+
+  return fallback;
+}
+
 // ─── Tables ───────────────────────────────────────────────────
 
-/**
- * Simpan/update status satu meja ke Firestore.
- * Menggunakan setDoc + merge agar tidak overwrite field lain.
- */
 export async function saveTableStatus(table: TableState): Promise<void> {
   const ref = doc(db, 'tables', String(table.id));
   const data: TableDoc = {
-    status:        table.status,
-    uid:           table.uid ?? null,
-    isOccupied:    table.isOccupied,
-    distance:      table.distance,
+    status: table.status,
+    uid: table.uid ?? null,
+    isOccupied: table.isOccupied,
+    distance: table.distance,
     isGhostBooking: table.isGhostBooking,
-    checkInTime:   table.checkInTime ?? null,
+    checkInTime: table.checkInTime ?? null,
     elapsedSeconds: table.elapsedSeconds,
   };
   await setDoc(ref, data, { merge: true });
 }
 
-/**
- * Langganan real-time ke semua dokumen dalam koleksi `tables`.
- * Callback dipanggil setiap kali ada perubahan di Firestore.
- * Mengembalikan fungsi unsubscribe.
- */
 export function subscribeToTables(
   callback: (updates: Record<number, TableDoc>) => void
 ): Unsubscribe {
@@ -79,9 +91,6 @@ export function subscribeToTables(
 
 // ─── Bookings ─────────────────────────────────────────────────
 
-/**
- * Simpan satu record checkout ke koleksi `bookings`.
- */
 export async function saveBookingRecord(record: BookingRecord): Promise<void> {
   await addDoc(collection(db, 'bookings'), {
     ...record,
@@ -89,66 +98,86 @@ export async function saveBookingRecord(record: BookingRecord): Promise<void> {
   });
 }
 
-// ─── Reservations ──────────────────────────────────────────────
+// ─── Reservations ─────────────────────────────────────────────
 
-/**
- * Simpan reservasi baru ke koleksi `reservations`.
- * Mengembalikan document ID yang dibuat Firestore.
- */
-export async function saveReservation(
-  data: Omit<Reservation, 'id'>
-): Promise<string> {
-  const ref = await addDoc(collection(db, 'reservations'), {
+export async function saveReservation(data: Omit<Reservation, 'id'>): Promise<string> {
+  const ref = await addDoc(collection(db, RESERVATIONS_COLLECTION), {
     ...data,
-    createdAt: new Date().toISOString(),
+    createdAt: data.createdAt || new Date().toISOString(),
   });
   return ref.id;
 }
 
-/**
- * Langganan real-time ke semua reservasi berstatus 'pending'.
- */
 export function subscribeToActiveReservations(
-  callback: (reservations: Reservation[]) => void
+  callback: (reservations: Reservation[]) => void,
+  onError?: ReservationListenerError
 ): Unsubscribe {
   const ref = query(
-    collection(db, 'reservations'),
-    where('status', '==', 'pending')
+    collection(db, RESERVATIONS_COLLECTION),
+    where('status', 'in', ['pending', 'confirmed'])
   );
-  return onSnapshot(ref, (snapshot) => {
-    const items: Reservation[] = [];
-    snapshot.forEach((docSnap) => {
-      items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
-    });
-    callback(items);
-  });
+
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      const items: Reservation[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
+      });
+      callback(sortReservationsByCreatedAt(items));
+    },
+    (error) => onError?.(error)
+  );
 }
 
-/**
- * Langganan real-time ke semua reservasi (untuk halaman riwayat).
- */
 export function subscribeToAllReservations(
-  callback: (reservations: Reservation[]) => void
+  callback: (reservations: Reservation[]) => void,
+  onError?: ReservationListenerError
 ): Unsubscribe {
   const ref = query(
-    collection(db, 'reservations'),
+    collection(db, RESERVATIONS_COLLECTION),
     orderBy('createdAt', 'desc')
   );
-  return onSnapshot(ref, (snapshot) => {
-    const items: Reservation[] = [];
-    snapshot.forEach((docSnap) => {
-      items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
-    });
-    callback(items);
-  });
+
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      const items: Reservation[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
+      });
+      callback(items);
+    },
+    (error) => onError?.(error)
+  );
 }
 
-/**
- * Update status sebuah reservasi.
- */
+export function subscribeToUserReservations(
+  userId: string,
+  callback: (reservations: Reservation[]) => void,
+  onError?: ReservationListenerError
+): Unsubscribe {
+  const ref = query(
+    collection(db, RESERVATIONS_COLLECTION),
+    where('userId', '==', userId)
+  );
+
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      const items: Reservation[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
+      });
+      callback(sortReservationsByCreatedAt(items));
+    },
+    (error) => onError?.(error)
+  );
+}
+
 export async function updateReservationStatus(
   id: string,
   status: ReservationStatus
 ): Promise<void> {
-  await setDoc(doc(db, 'reservations', id), { status }, { merge: true });
+  await setDoc(doc(db, RESERVATIONS_COLLECTION, id), { status }, { merge: true });
 }

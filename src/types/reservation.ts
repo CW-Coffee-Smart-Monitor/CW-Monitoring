@@ -15,5 +15,9 @@ export interface Reservation {
   expiresAt: number;        // unix ms = arrivalTime + toleranceMinutes
   source: 'map' | 'form';
   branch?: string;
+  room?: string;
   note?: string;
+  userId?: string;
+  userEmail?: string;
+  paymentProofName?: string;
 }
