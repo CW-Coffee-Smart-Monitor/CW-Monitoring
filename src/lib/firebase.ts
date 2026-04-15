@@ -1,8 +1,8 @@
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getDatabase, type Database } from 'firebase/database';
+import { getAuth } from 'firebase/auth'; // ✅ tambah ini
 
-// Env vars di-embed oleh Next.js untuk client bundle
 const DB_URL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL;
 
 const firebaseConfig = {
@@ -15,12 +15,11 @@ const firebaseConfig = {
   databaseURL:       DB_URL,
 };
 
-// Prevent re-initializing on hot reload
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
+export const auth = getAuth(app); // ✅ ini penting
 
-// Inisialisasi RTDB dengan URL eksplisit agar tidak bergantung pada inference region
 let rtdb: Database | null = null;
 if (DB_URL) {
   rtdb = getDatabase(app, DB_URL);
