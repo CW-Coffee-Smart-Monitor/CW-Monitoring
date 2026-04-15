@@ -11,7 +11,6 @@ export default function BookingPage() {
       id: 'BK-001',
       branch: 'CW Coffee Pusat',
       room: 'Sofa',
-      chairsNeeded: 3,
       date: '2026-01-10',
       tableId: 1,
       tableName: 'Meja 1',
