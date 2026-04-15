@@ -31,7 +31,7 @@ export default function TableCard({ table, onClick }: TableCardProps) {
         <h3 className="text-sm font-semibold text-neutral-900">{table.name}</h3>
         <StatusBadge
           label={statusLabel}
-          variant={table.status === 'occupied' ? 'occupied' : table.status}
+          variant={table.status === 'occupied' ? 'occupied' : table.status === 'reserved' ? 'reserved' : table.status}
           pulse={table.status === 'warning'}
         />
       </div>
