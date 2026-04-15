@@ -7,7 +7,6 @@
 import { TableProvider } from '@/context/TableContext';
 import { usePathname } from 'next/navigation';
 import Header from '@/components/common/Header';
-import BottomNav from '@/components/common/BottomNav';
 import SimulatorRunner from '@/components/common/SimulatorRunner';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -18,10 +17,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <TableProvider>
       <SimulatorRunner />
       {!isAuthRoute && <Header />}
-      <main className="mx-auto w-full max-w-md flex-1 px-4 pb-8 pt-4">
+      <main className="mx-auto w-full max-w-md flex-1 px-4 pb-4 pt-4">
         {children}
       </main>
-      {!isAuthRoute && <BottomNav />}
     </TableProvider>
   );
 }
