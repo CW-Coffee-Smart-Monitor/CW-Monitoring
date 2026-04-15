@@ -30,13 +30,20 @@ export async function POST(req: NextRequest) {
       role: 'user',
     });
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       {
         message: 'User created successfully',
         uid: user.uid,
       },
       { status: 201 }
     );
+    res.cookies.set('cw_session', user.uid, {
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 hari
+      sameSite: 'lax',
+    });
+    return res;
 
   } catch (error: unknown) {                                    // ✅ unknown
     const firebaseError = error as { code?: string; message?: string };

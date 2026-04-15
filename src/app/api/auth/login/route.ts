@@ -17,10 +17,17 @@ export async function POST(req: NextRequest) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    return NextResponse.json(
+    const res = NextResponse.json(
       { message: 'Login berhasil', uid: user.uid },
       { status: 200 }
     );
+    res.cookies.set('cw_session', user.uid, {
+      httpOnly: true,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 hari
+      sameSite: 'lax',
+    });
+    return res;
 
   } catch (error: unknown) {
     const firebaseError = error as { code?: string };

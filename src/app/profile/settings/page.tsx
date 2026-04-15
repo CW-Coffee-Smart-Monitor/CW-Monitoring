@@ -18,6 +18,11 @@ export default function SettingsPage() {
   const [language, setLanguage] = useState('id');
   const [isPublic, setIsPublic] = useState(true);
 
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/auth/login');
+  };
+
   return (
     <div className="min-h-screen bg-white p-4 space-y-4">
 
@@ -123,7 +128,10 @@ export default function SettingsPage() {
       </div>
 
       {/* Logout */}
-      <button className="w-full flex items-center justify-center gap-2 rounded-2xl bg-rose-500 py-3 text-sm font-semibold text-white hover:opacity-90">
+      <button
+        onClick={handleLogout}
+        className="w-full flex items-center justify-center gap-2 rounded-2xl bg-rose-500 py-3 text-sm font-semibold text-white hover:opacity-90"
+      >
         <LogOut className="h-4 w-4" strokeWidth={2.5} />
         Keluar
       </button>
