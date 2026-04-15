@@ -4,10 +4,13 @@
  * TableDetailDrawer — Slide-up bottom sheet showing table info when tapped.
  */
 
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plug, Wifi, Sun, Coffee, Volume1, Trees, Users, Sofa, Zap, CheckCircle, AlertCircle, Clock, type LucideIcon } from 'lucide-react';
+import { X, Plug, Wifi, Sun, Coffee, Volume1, Trees, Users, Sofa, Zap, CheckCircle, AlertCircle, Clock, CalendarClock, type LucideIcon } from 'lucide-react';
 import { TableState } from '@/types';
 import { useTableStatus } from '@/hooks/useTableStatus';
+import { TABLE_POSITIONS } from '@/data/tables';
+import ReservationModal from './ReservationModal';
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Plug, Wifi, Sun, Coffee, Volume1, Trees, Users, Sofa,
@@ -25,10 +28,11 @@ const FACILITY_COLOR: Record<string, string> = {
 };
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string; icon: LucideIcon }> = {
-  available: { label: 'Tersedia',  dot: 'bg-green-400',   badge: 'bg-green-500/15 text-green-400 border border-green-500/30',   icon: CheckCircle },
-  occupied:  { label: 'Terisi',    dot: 'bg-red-400',     badge: 'bg-red-500/15 text-red-400 border border-red-500/30',         icon: AlertCircle },
-  warning:   { label: 'Ghost Booking', dot: 'bg-[#D7851F]',   badge: 'bg-[#D7851F]/15 text-[#D7851F] border border-[#D7851F]/30',  icon: Clock },
-  offline:   { label: 'Offline',   dot: 'bg-neutral-400', badge: 'bg-neutral-500/15 text-neutral-400 border border-neutral-500/30', icon: AlertCircle },
+  available: { label: 'Tersedia',       dot: 'bg-green-400',   badge: 'bg-green-500/15 text-green-400 border border-green-500/30',          icon: CheckCircle },
+  occupied:  { label: 'Terisi',         dot: 'bg-red-400',     badge: 'bg-red-500/15 text-red-400 border border-red-500/30',               icon: AlertCircle },
+  reserved:  { label: 'Dipesan',        dot: 'bg-amber-400',   badge: 'bg-amber-500/15 text-amber-500 border border-amber-400/30',          icon: CalendarClock },
+  warning:   { label: 'Ghost Booking',  dot: 'bg-[#D7851F]',   badge: 'bg-[#D7851F]/15 text-[#D7851F] border border-[#D7851F]/30',         icon: Clock },
+  offline:   { label: 'Offline',        dot: 'bg-neutral-400', badge: 'bg-neutral-500/15 text-neutral-400 border border-neutral-500/30',    icon: AlertCircle },
 };
 
 interface TableDetailDrawerProps {
@@ -46,8 +50,13 @@ export default function TableDetailDrawer({ table, onClose }: TableDetailDrawerP
 
 function DrawerContent({ table, onClose }: { readonly table: TableState; readonly onClose: () => void }) {
   const { elapsedFormatted } = useTableStatus(table);
+  const [showReservation, setShowReservation] = useState(false);
   const statusCfg = STATUS_CONFIG[table.status] ?? STATUS_CONFIG.offline;
   const StatusIcon = statusCfg.icon;
+  const capacity = (TABLE_POSITIONS[table.id]?.w ?? 63) <= 25 ? 2 : 4;
+
+  const canBook = table.status === 'available';
+  const isReserved = table.status === 'reserved';
 
   return (
     <>
@@ -112,6 +121,12 @@ function DrawerContent({ table, onClose }: { readonly table: TableState; readonl
               <div className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs text-white/60">
                 <Clock className="h-3 w-3" />
                 {elapsedFormatted}
+              </div>
+            )}
+            {isReserved && table.reservedBy && (
+              <div className="flex items-center gap-1.5 rounded-full bg-amber-400/20 px-3 py-1.5 text-xs text-amber-300">
+                <CalendarClock className="h-3 w-3" />
+                {table.reservedBy}
               </div>
             )}
           </div>
@@ -183,10 +198,8 @@ function DrawerContent({ table, onClose }: { readonly table: TableState; readonl
             {/* Quick stats row */}
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="rounded-2xl bg-[#4B135F]/5 p-3">
-                <p className="text-lg font-extrabold text-[#4B135F]">
-                  {table.seatType?.replace(/[^0-9]/g, '') || '—'}
-                </p>
-                <p className="mt-0.5 text-[10px] text-neutral-400 font-medium">Kursi</p>
+                <p className="text-lg font-extrabold text-[#4B135F]">{capacity}</p>
+                <p className="mt-0.5 text-[10px] text-neutral-400 font-medium">Kapasitas</p>
               </div>
               <div className="rounded-2xl bg-[#D7851F]/5 p-3">
                 <p className="text-lg font-extrabold text-[#D7851F]">AC</p>
@@ -199,12 +212,41 @@ function DrawerContent({ table, onClose }: { readonly table: TableState; readonl
             </div>
 
             {/* CTA Button */}
-            <button className="w-full rounded-2xl bg-[#4B135F] py-4 text-sm font-bold text-white shadow-lg shadow-[#4B135F]/30 transition-all hover:bg-[#3a0f49] active:scale-[0.98]">
-              Pesan Meja Sekarang →
-            </button>
+            {(() => {
+              if (canBook) {
+                return (
+                  <button
+                    onClick={() => setShowReservation(true)}
+                    className="w-full rounded-2xl bg-[#4B135F] py-4 text-sm font-bold text-white shadow-lg shadow-[#4B135F]/30 transition-all hover:bg-[#3a0f49] active:scale-[0.98]"
+                  >
+                    Pesan Meja Sekarang →
+                  </button>
+                );
+              }
+              if (isReserved) {
+                return (
+                  <div className="w-full rounded-2xl border border-amber-300 bg-amber-50 py-4 text-center text-sm font-semibold text-amber-700">
+                    📅 Dipesan oleh <strong>{table.reservedBy ?? 'seseorang'}</strong>
+                  </div>
+                );
+              }
+              return (
+                <div className="w-full rounded-2xl border border-neutral-200 bg-neutral-100 py-4 text-center text-sm font-semibold text-neutral-400">
+                  Meja sedang tidak tersedia
+                </div>
+              );
+            })()}
           </div>
         </div>
       </motion.div>
+
+      {/* Reservation Modal */}
+      {showReservation && (
+        <ReservationModal
+          table={table}
+          onClose={() => setShowReservation(false)}
+        />
+      )}
     </>
   );
 }

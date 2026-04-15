@@ -11,7 +11,8 @@ import TableDetailDrawer from './TableDetailDrawer';
 const STATUS_FILL: Record<string, string> = {
   available: '#22c55e',
   occupied:  '#ef4444',
-  warning:   '#f59e0b',
+  reserved:  '#f59e0b',
+  warning:   '#f97316',
   offline:   '#9ca3af',
 };
 

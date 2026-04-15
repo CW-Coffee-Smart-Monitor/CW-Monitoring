@@ -36,4 +36,4 @@ export default function CreateBookingPage() {
       <BookingForm onSubmit={handleCreateBooking} />
     </section>
   );
-}
+}
