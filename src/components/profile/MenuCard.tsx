@@ -1,9 +1,9 @@
-import { li } from "framer-motion/client";
+
 import Link from "next/link";
 type MenuItem = {
   title: string;
   subtitle: string;
-  icon: string;
+  icon: React.ReactNode;
   href: string;
 };
 
