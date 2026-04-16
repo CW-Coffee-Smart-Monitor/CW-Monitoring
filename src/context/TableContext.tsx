@@ -328,6 +328,10 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
   // Ghost-booking timers per table
   const ghostTimers = useRef<Map<number, NodeJS.Timeout>>(new Map());
 
+  // Track reservation IDs yang sudah di-confirm agar tidak memanggil
+  // updateReservationStatus berulang-ulang setiap detik dari RTDB callback.
+  const confirmedReservationIds = useRef<Set<string>>(new Set());
+
   /** Process raw sensor data with ghost-smoothing logic */
   const processSensorData = useCallback(
     (payload: SensorPayload) => {
@@ -404,12 +408,19 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsub = subscribeToRTDB((updates) => {
       // Cek SEBELUM dispatch: meja mana yang transisi reserved → occupied
-      // Kalau ketemu, langsung update Firestore reservasi: pending → confirmed
+      // Guard: hanya panggil updateReservationStatus sekali per reservationId
+      // (bukan setiap detik) menggunakan confirmedReservationIds ref.
       currentTablesRef.current.forEach((t) => {
         const remote = updates[t.id];
         if (!remote) return;
         const isNowOccupied = remote.isOccupied ?? false;
-        if (t.status === 'reserved' && isNowOccupied && t.reservationId) {
+        if (
+          t.status === 'reserved' &&
+          isNowOccupied &&
+          t.reservationId &&
+          !confirmedReservationIds.current.has(t.reservationId)
+        ) {
+          confirmedReservationIds.current.add(t.reservationId);
           updateReservationStatus(t.reservationId, 'confirmed').catch(console.error);
         }
       });

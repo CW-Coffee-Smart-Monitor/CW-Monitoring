@@ -16,15 +16,15 @@ import {
   Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { TableState, BookingRecord } from '@/types';
+import { BookingRecord, TableStatus } from '@/types';
 import type { Reservation, ReservationStatus } from '@/types/reservation';
 
 const RESERVATIONS_COLLECTION = 'reservations';
 type ReservationListenerError = (error: unknown) => void;
 
-/** Subset dari TableState yang disimpan di Firestore */
+/** Subset dari TableState yang digunakan RTDB dan type references */
 export interface TableDoc {
-  status: TableState['status'];
+  status: TableStatus;
   uid: string | null;
   isOccupied: boolean;
   distance: number;
@@ -58,36 +58,11 @@ export function getFirestoreErrorMessage(
 }
 
 // ─── Tables ───────────────────────────────────────────────────
-
-export async function saveTableStatus(table: TableState): Promise<void> {
-  const ref = doc(db, 'tables', String(table.id));
-  const data: TableDoc = {
-    status: table.status,
-    uid: table.uid ?? null,
-    isOccupied: table.isOccupied,
-    distance: table.distance,
-    isGhostBooking: table.isGhostBooking,
-    checkInTime: table.checkInTime ?? null,
-    elapsedSeconds: table.elapsedSeconds,
-  };
-  await setDoc(ref, data, { merge: true });
-}
-
-export function subscribeToTables(
-  callback: (updates: Record<number, TableDoc>) => void
-): Unsubscribe {
-  const ref = collection(db, 'tables');
-  return onSnapshot(ref, (snapshot) => {
-    const updates: Record<number, TableDoc> = {};
-    snapshot.forEach((docSnap) => {
-      const id = Number(docSnap.id);
-      if (!isNaN(id)) {
-        updates[id] = docSnap.data() as TableDoc;
-      }
-    });
-    callback(updates);
-  });
-}
+// saveTableStatus dan subscribeToTables DIHAPUS.
+// Menulis status tabel ke Firestore dari frontend menyebabkan feedback loop:
+// ESP32 kirim 1x/detik → RTDB_SYNC → saveTableStatus → subscribeToTables fire → loop.
+// Ini menghabiskan 86.400 writes + reads/hari, melebihi Spark plan (20k writes, 50k reads).
+// Status tabel live sepenuhnya dikelola oleh RTDB (Firebase Realtime Database).
 
 // ─── Bookings ─────────────────────────────────────────────────
 
