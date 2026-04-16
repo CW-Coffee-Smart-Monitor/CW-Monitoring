@@ -443,10 +443,14 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [state.tables]);
   // ── Write to Firestore when table state changes ───────────────
-  const prevTablesRef = useRef<TableState[]>([]);
+  // Inisialisasi dengan INITIAL_TABLES agar tidak trigger burst writes saat app pertama load.
+  // Skip tabel yang dikontrol RTDB (ESP32) — RTDB sudah jadi sumber kebenaran, tidak perlu mirror ke Firestore.
+  const prevTablesRef = useRef<TableState[]>(INITIAL_TABLES);
   useEffect(() => {
     const prev = prevTablesRef.current;
     state.tables.forEach((table) => {
+      // Jangan tulis ke Firestore untuk tabel yang dikontrol ESP32 via RTDB
+      if (state.rtdbControlled.has(table.id)) return;
       const old = prev.find((t) => t.id === table.id);
       const changed =
         !old ||
@@ -459,7 +463,7 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
       }
     });
     prevTablesRef.current = state.tables;
-  }, [state.tables]);
+  }, [state.tables, state.rtdbControlled]);
 
   // ── Write booking records to Firestore on checkout ────────────
   const prevHistoryLenRef = useRef(0);
