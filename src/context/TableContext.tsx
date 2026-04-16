@@ -23,7 +23,7 @@ import { TableState, SensorPayload, DashboardSummary, BookingRecord } from '@/ty
 import { Reservation } from '@/types/reservation';
 import { INITIAL_TABLES } from '@/data/tables';
 import { CONFIG } from '@/lib/config';
-import { subscribeToTables, saveTableStatus, saveBookingRecord, TableDoc, subscribeToActiveReservations, updateReservationStatus } from '@/lib/firestoreService';
+import { saveBookingRecord, subscribeToActiveReservations, updateReservationStatus, type TableDoc } from '@/lib/firestoreService';
 import { subscribeToRTDB } from '@/lib/rtdbService';
 
 // ──────────────────────────── Types ────────────────────────────
@@ -387,13 +387,11 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, []);
 
-  // ── Firestore real-time listener ──────────────────────────────
-  useEffect(() => {
-    const unsub = subscribeToTables((updates) => {
-      dispatch({ type: 'FIRESTORE_SYNC', updates });
-    });
-    return () => unsub();
-  }, []);
+  // ── Firestore table listener DINONAKTIFKAN ─────────────────────
+  // subscribeToTables dihapus untuk mencegah feedback loop baca/tulis
+  // yang menyebabkan Firestore quota exhausted.
+  // Status tabel real-time sudah ditangani oleh RTDB (ESP32).
+  // Reservasi disync via subscribeToActiveReservations di bawah.
 
   // ── Realtime Database listener (data dari ESP32 / Wokwi) ──────
   // currentTablesRef selalu menyimpan state terbaru agar bisa diakses
@@ -442,28 +440,12 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
     }, 30_000);
     return () => clearInterval(interval);
   }, [state.tables]);
-  // ── Write to Firestore when table state changes ───────────────
-  // Inisialisasi dengan INITIAL_TABLES agar tidak trigger burst writes saat app pertama load.
-  // Skip tabel yang dikontrol RTDB (ESP32) — RTDB sudah jadi sumber kebenaran, tidak perlu mirror ke Firestore.
-  const prevTablesRef = useRef<TableState[]>(INITIAL_TABLES);
-  useEffect(() => {
-    const prev = prevTablesRef.current;
-    state.tables.forEach((table) => {
-      // Jangan tulis ke Firestore untuk tabel yang dikontrol ESP32 via RTDB
-      if (state.rtdbControlled.has(table.id)) return;
-      const old = prev.find((t) => t.id === table.id);
-      const changed =
-        !old ||
-        old.status !== table.status ||
-        old.isOccupied !== table.isOccupied ||
-        old.uid !== table.uid ||
-        old.isGhostBooking !== table.isGhostBooking;
-      if (changed) {
-        saveTableStatus(table).catch(console.error);
-      }
-    });
-    prevTablesRef.current = state.tables;
-  }, [state.tables, state.rtdbControlled]);
+  // ── Write table status ke Firestore DINONAKTIFKAN ───────────────
+  // saveTableStatus dihapus untuk mencegah Firestore quota exhausted.
+  // Sebelumnya: setiap update RTDB (1x/detik) → tulis ke Firestore → 86.400 writes/hari.
+  // Spark plan hanya 20.000 writes/hari — langsung habis.
+  // Solusi: RTDB (Firebase Realtime DB) adalah sumber kebenaran untuk status meja live.
+  // Firestore hanya digunakan untuk reservations collection (frekuensi rendah).
 
   // ── Write booking records to Firestore on checkout ────────────
   const prevHistoryLenRef = useRef(0);
