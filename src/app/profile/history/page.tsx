@@ -1,28 +1,81 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { onAuthStateChanged, type User } from "firebase/auth";
 import BookingHistory from "@/components/booking/BookingHistory";
 import type { BookingItem } from "@/types/booking";
+import type { Reservation } from "@/types/reservation";
+import {
+  getFirestoreErrorMessage,
+  subscribeToUserReservations,
+} from "@/lib/firestoreService";
+import { auth } from "@/lib/firebase";
 
 export default function HistoryBookingPage() {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const bookings: BookingItem[] = [
-    {
-      id: "BK-001",
-      branch: "CW Coffee Pusat",
-      room: "Sofa",
-      date: "2026-01-10",
-      tableId: 1,
-      tableName: "Meja 1",
-      time: "19:00",
-      note: "Dekat colokan",
-      status: "completed",
-      createdAt: "2026-01-08 14:30",
-      paymentProof: null,
-    },
-  ];
+  useEffect(() => {
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      if (!user) setLoading(false);
+    });
+    return () => unsubscribeAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setReservations([]);
+      if (currentUser === null) {
+        setErrorMessage("Masuk terlebih dahulu untuk melihat histori reservasi Anda.");
+      }
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage("");
+
+    const unsubscribeReservations = subscribeToUserReservations(
+      currentUser.uid,
+      (items) => {
+        setReservations(items);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("LOAD USER RESERVATIONS ERROR:", error);
+        setReservations([]);
+        setErrorMessage(
+          getFirestoreErrorMessage(error, "Histori reservasi tidak dapat dimuat saat ini.")
+        );
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribeReservations();
+  }, [currentUser]);
+
+  const bookings = useMemo<BookingItem[]>(
+    () =>
+      reservations.map((reservation) => ({
+        id: reservation.id,
+        branch: reservation.branch ?? "CW Coffee",
+        room: reservation.room ?? "-",
+        date: reservation.date,
+        tableId: reservation.tableId,
+        tableName: reservation.tableName,
+        time: reservation.arrivalTime,
+        note: reservation.note ?? "",
+        status: reservation.status === "cancelled" ? "cancelled" : reservation.status,
+        createdAt: reservation.createdAt,
+        paymentProof: null,
+      })),
+    [reservations]
+  );
 
   return (
     <div className="min-h-screen bg-white p-4 space-y-4">
@@ -37,8 +90,17 @@ export default function HistoryBookingPage() {
 
       {/* Card Wrapper */}
       <div className="rounded-2xl bg-white p-3 shadow-sm border border-neutral-200">
-        <BookingHistory bookings={bookings} />
+        {loading && (
+          <p className="p-4 text-sm text-neutral-500">Memuat histori reservasi...</p>
+        )}
+        {!loading && errorMessage && (
+          <p className="p-4 text-sm text-amber-700">{errorMessage}</p>
+        )}
+        {!loading && !errorMessage && (
+          <BookingHistory bookings={bookings} />
+        )}
       </div>
     </div>
   );
 }
+
