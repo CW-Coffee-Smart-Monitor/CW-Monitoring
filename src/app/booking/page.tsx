@@ -3,15 +3,18 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import BookingHistory from '@/components/booking/BookingHistory';
 import type { BookingItem } from '@/types/booking';
 import type { Reservation } from '@/types/reservation';
 import {
   getFirestoreErrorMessage,
-  subscribeToAllReservations,
+  subscribeToUserReservations,
 } from '@/lib/firestoreService';
+import { auth } from '@/lib/firebase';
 
 export default function BookingPage() {
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -21,13 +24,32 @@ export default function BookingPage() {
   });
 
   useEffect(() => {
-    const unsubscribe = subscribeToAllReservations(
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+    
+    return () => unsubscribeAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setReservations([]);
+      setErrorMessage('Masuk terlebih dahulu untuk melihat histori reservasi Anda.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage('');
+
+    const unsubscribeReservations = subscribeToUserReservations(
+      currentUser.uid,
       (items) => {
         setReservations(items);
         setLoading(false);
       },
       (error) => {
-        console.error('LOAD RESERVATIONS ERROR:', error);
+        console.error('LOAD USER RESERVATIONS ERROR:', error);
         setReservations([]);
         setErrorMessage(
           getFirestoreErrorMessage(error, 'Histori reservasi tidak dapat dimuat saat ini.')
@@ -36,8 +58,8 @@ export default function BookingPage() {
       }
     );
 
-    return () => unsubscribe();
-  }, []);
+    return () => unsubscribeReservations();
+  }, [currentUser]);
 
   useEffect(() => {
     if (!toastMessage) return;
