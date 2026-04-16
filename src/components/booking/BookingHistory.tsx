@@ -34,10 +34,6 @@ export default function BookingHistory({ bookings }: BookingHistoryProps) {
             >
               <div className="flex items-start justify-between gap-3 p-4 pb-3">
                 <div className="min-w-0 flex-1">
-                  <div className="mb-0.5 flex items-center gap-1.5">
-                    <Hash className="h-3 w-3 shrink-0 text-[#4B135F]/60" />
-                    <span className="text-xs font-semibold text-[#4B135F]/80">{booking.id}</span>
-                  </div>
                   <h3 className="truncate text-base font-bold text-neutral-900">
                     {booking.branch}
                   </h3>
