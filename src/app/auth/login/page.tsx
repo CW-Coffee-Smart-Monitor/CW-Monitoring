@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import Link from 'next/link';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,6 +28,12 @@ export default function LoginPage() {
     });
 
     if (response.status === 200) {
+      // Set Firebase client-side auth state so onAuthStateChanged works in booking page
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch {
+        // Cookie sudah di-set, lanjutkan redirect meskipun gagal
+      }
       setIsLoading(false);
       router.push('/'); // ganti sesuai halaman tujuan kamu
     } else {
