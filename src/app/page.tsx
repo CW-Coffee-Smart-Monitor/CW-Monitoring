@@ -15,7 +15,6 @@ export default function HomePage() {
 
       {/* Capacity Card */}
       <CapacityCard
-        percentage={72}
         filled={summary.totalTables - summary.available}
         total={summary.totalTables}
       />

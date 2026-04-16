@@ -3,12 +3,15 @@
 import { Users } from 'lucide-react';
 
 interface Props {
-  percentage: number;
   filled: number;
   total: number;
 }
 
-export default function CapacityCard({ percentage, filled, total }: Props) {
+export default function CapacityCard({ filled, total }: Props) {
+  const percentage = total > 0 
+  ? Math.round((filled / total) * 100) 
+  : 0;
+
   const available = total - filled;
   const label = percentage >= 80 ? 'RAMAI' : percentage >= 50 ? 'SEDANG' : 'SEPI';
 
