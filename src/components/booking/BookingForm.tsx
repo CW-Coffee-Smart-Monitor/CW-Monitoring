@@ -11,9 +11,7 @@ interface BookingFormProps {
 }
 
 const BRANCH_OPTIONS = [
-    'CW Coffee Pusat',
-    'CW Coffee Barat',
-    'CW Coffee Timur',
+    'CW Coffee',
 ];
 
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) =>
@@ -175,7 +173,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                 {/* Pilih Cabang */}
                 <div>
                     <label className="mb-2 block text-sm font-medium text-neutral-700">
-                        Pilih Cabang
+                        Pilih Cafe
                     </label>
                     <select
                         name="branch"
@@ -185,7 +183,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                             form.branch === '' ? 'text-neutral-400' : 'text-neutral-900'
                         }`}
                     >
-                        <option value="" disabled hidden>Pilih cabang</option>
+                        <option value="" disabled hidden>Pilih cafe</option>
                         {BRANCH_OPTIONS.map((branch) => (
                             <option key={branch} value={branch} className="text-neutral-900">
                                 {branch}
