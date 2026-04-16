@@ -196,7 +196,7 @@ export default function BookingForm({ onSubmit }: BookingFormProps) {
                 <div>
                     <div className="mb-2 flex items-center justify-between">
                         <label className="text-sm font-medium text-neutral-700">
-                            Pilih Meja
+                            Pilih Sofa
                         </label>
                         {form.tableId && (
                             <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
