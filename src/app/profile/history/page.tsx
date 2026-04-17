@@ -15,49 +15,49 @@ import { auth } from "@/lib/firebase";
 
 export default function HistoryBookingPage() {
   const router = useRouter();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      if (!user) setLoading(false);
-    });
-    return () => unsubscribeAuth();
-  }, []);
+    let unsubscribeReservations: (() => void) | undefined;
 
-  useEffect(() => {
-    if (!currentUser) {
-      setReservations([]);
-      if (currentUser === null) {
-        setErrorMessage("Masuk terlebih dahulu untuk melihat histori reservasi Anda.");
-      }
-      return;
-    }
+    const unsubscribeAuth = onAuthStateChanged(auth, (user: User | null) => {
+      // Clean up any previous reservation subscription when auth changes
+      unsubscribeReservations?.();
 
-    setLoading(true);
-    setErrorMessage("");
-
-    const unsubscribeReservations = subscribeToUserReservations(
-      currentUser.uid,
-      (items) => {
-        setReservations(items);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("LOAD USER RESERVATIONS ERROR:", error);
+      if (!user) {
         setReservations([]);
-        setErrorMessage(
-          getFirestoreErrorMessage(error, "Histori reservasi tidak dapat dimuat saat ini.")
-        );
+        setErrorMessage("Masuk terlebih dahulu untuk melihat histori reservasi Anda.");
         setLoading(false);
+        return;
       }
-    );
 
-    return () => unsubscribeReservations();
-  }, [currentUser]);
+      setLoading(true);
+      setErrorMessage("");
+
+      unsubscribeReservations = subscribeToUserReservations(
+        user.uid,
+        (items) => {
+          setReservations(items);
+          setLoading(false);
+        },
+        (error) => {
+          console.error("LOAD USER RESERVATIONS ERROR:", error);
+          setReservations([]);
+          setErrorMessage(
+            getFirestoreErrorMessage(error, "Histori reservasi tidak dapat dimuat saat ini.")
+          );
+          setLoading(false);
+        }
+      );
+    });
+
+    return () => {
+      unsubscribeAuth();
+      unsubscribeReservations?.();
+    };
+  }, []); // single stable effect, no deps needed
 
   const bookings = useMemo<BookingItem[]>(
     () =>
@@ -81,10 +81,12 @@ export default function HistoryBookingPage() {
     <div className="min-h-screen bg-white p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => router.back()} className="flex items-center justify-center h-8 w-8 rounded-full bg-white shadow-sm border border-neutral-200 hover:bg-neutral-50">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center justify-center h-8 w-8 rounded-full bg-white shadow-sm border border-neutral-200 hover:bg-neutral-50"
+        >
           <ArrowLeft className="h-4 w-4 text-neutral-700" strokeWidth={5} />
         </button>
-
         <h1 className="text-lg font-semibold text-neutral-900">History Reservasi Saya</h1>
       </div>
 
@@ -96,11 +98,8 @@ export default function HistoryBookingPage() {
         {!loading && errorMessage && (
           <p className="p-4 text-sm text-amber-700">{errorMessage}</p>
         )}
-        {!loading && !errorMessage && (
-          <BookingHistory bookings={bookings} />
-        )}
+        {!loading && !errorMessage && <BookingHistory bookings={bookings} />}
       </div>
     </div>
   );
 }
-
