@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   ChevronDown,
   Plus,
@@ -265,13 +264,13 @@ export default function LandingPage() {
 
           {/* Two columns */}
           <div className="grid items-center gap-12 md:grid-cols-2">
-            {/* Left — Image placeholder */}
+            {/* Left — Image */}
             <motion.div variants={fadeUp} custom={1} className="relative aspect-4/3 overflow-hidden rounded-2xl bg-neutral-200">
-              <Image
-                src="/CW Club.png"
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/CWSuasana.jpg"
                 alt="CW Coffee suasana"
-                fill
-                className="object-cover"
+                className="h-full w-full object-cover"
               />
             </motion.div>
 
