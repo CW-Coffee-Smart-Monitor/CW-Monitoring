@@ -12,6 +12,12 @@ import SimulatorRunner from '@/components/common/SimulatorRunner';
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname?.startsWith('/auth');
+  const isLandingRoute = pathname === '/landing';
+
+  // Landing page gets full-width layout without app chrome
+  if (isLandingRoute) {
+    return <>{children}</>;
+  }
 
   return (
     <TableProvider>
