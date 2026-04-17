@@ -332,6 +332,10 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
   // updateReservationStatus berulang-ulang setiap detik dari RTDB callback.
   const confirmedReservationIds = useRef<Set<string>>(new Set());
 
+  // Guard untuk auto-cancel: pastikan updateReservationStatus('cancelled')
+  // hanya dipanggil sekali per reservationId per session.
+  const cancelledReservationIds = useRef<Set<string>>(new Set());
+
   /** Process raw sensor data with ghost-smoothing logic */
   const processSensorData = useCallback(
     (payload: SensorPayload) => {
@@ -437,20 +441,28 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // ── Auto-cancel expired reservations (cek setiap 30 detik) ───
+  // PENTING: dependency [] agar interval tidak di-reset setiap detik oleh TICK.
+  // Sebelumnya [state.tables] menyebabkan interval di-reset 1x/detik → tidak pernah jalan.
+  // State terbaru dibaca via currentTablesRef yang selalu diupdate oleh effect di atas.
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      state.tables.forEach((t) => {
-        if (t.status === 'reserved' && t.reservedUntil && now > t.reservedUntil) {
+      currentTablesRef.current.forEach((t) => {
+        if (
+          t.status === 'reserved' &&
+          t.reservedUntil &&
+          now > t.reservedUntil &&
+          t.reservationId &&
+          !cancelledReservationIds.current.has(t.reservationId)
+        ) {
+          cancelledReservationIds.current.add(t.reservationId);
           dispatch({ type: 'CANCEL_RESERVATION', tableId: t.id });
-          if (t.reservationId) {
-            updateReservationStatus(t.reservationId, 'cancelled').catch(console.error);
-          }
+          updateReservationStatus(t.reservationId, 'cancelled').catch(console.error);
         }
       });
     }, 30_000);
     return () => clearInterval(interval);
-  }, [state.tables]);
+  }, []); // BUKAN [state.tables] — baca state via currentTablesRef
   // ── Write table status ke Firestore DINONAKTIFKAN ───────────────
   // saveTableStatus dihapus untuk mencegah Firestore quota exhausted.
   // Sebelumnya: setiap update RTDB (1x/detik) → tulis ke Firestore → 86.400 writes/hari.
