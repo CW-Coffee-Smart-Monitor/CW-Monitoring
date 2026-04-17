@@ -12,6 +12,8 @@ import {
   Check,
   ChevronRight,
   Users,
+  CalendarDays,
+  Clock3,
 } from 'lucide-react';
 import { INITIAL_TABLES, TABLE_POSITIONS } from '@/data/tables';
 import type { TableState } from '@/types';
@@ -27,45 +29,15 @@ function getSofaGroup(name: string): string {
   return name.trim().charAt(0).toUpperCase();
 }
 
-function getTableCapacity(id: number): string {
-  const pos = TABLE_POSITIONS[id];
-  const w = pos?.w ?? 63;
-  if (w <= 30) return '1–2 orang';
-  return '4–6 orang';
-}
-
 const ICON_MAP: Record<string, React.ElementType> = { Wifi, Plug, Sun, Volume1 };
 
-const STATUS_CONFIG = {
-  available: {
-    dot: 'bg-emerald-400',
-    badge: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-    label: 'Tersedia',
-  },
-  occupied: {
-    dot: 'bg-red-400',
-    badge: 'bg-red-50 text-red-600 border-red-100',
-    label: 'Terisi',
-  },
-  warning: {
-    dot: 'bg-amber-400',
-    badge: 'bg-amber-50 text-amber-700 border-amber-100',
-    label: 'Penuh',
-  },
-  offline: {
-    dot: 'bg-neutral-400',
-    badge: 'bg-neutral-100 text-neutral-500 border-neutral-200',
-    label: 'Offline',
-  },
-};
+type AvailabilityState = 'available' | 'unavailable' | 'unknown';
 
 type SofaGroup = {
   key: string;
   tables: TableState[];
   representative: TableState;
-  availableCount: number;
   totalCount: number;
-  status: 'available' | 'occupied' | 'warning' | 'offline';
 };
 
 function buildSofaGroups(tables: TableState[]): SofaGroup[] {
@@ -79,22 +51,12 @@ function buildSofaGroups(tables: TableState[]): SofaGroup[] {
 
   return Array.from(grouped.entries())
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([key, items]) => {
-      const availableTables = items.filter((item) => item.status === 'available');
-      const representative = availableTables[0] ?? items[0];
-
-      let status: SofaGroup['status'] = 'available';
-      if (availableTables.length === 0) status = 'occupied';
-
-      return {
-        key,
-        tables: items,
-        representative,
-        availableCount: availableTables.length,
-        totalCount: items.length,
-        status,
-      };
-    });
+    .map(([key, items]) => ({
+      key,
+      tables: items,
+      representative: items[0],
+      totalCount: items.length,
+    }));
 }
 
 function getGroupCenter(group: SofaGroup) {
@@ -137,20 +99,47 @@ function getGroupCenter(group: SofaGroup) {
   };
 }
 
+function getAvailabilityConfig(state: AvailabilityState) {
+  if (state === 'available') {
+    return {
+      dot: 'bg-emerald-400',
+      badge: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+      label: 'Tersedia',
+    };
+  }
+
+  if (state === 'unavailable') {
+    return {
+      dot: 'bg-red-400',
+      badge: 'bg-red-50 text-red-700 border-red-100',
+      label: 'Sudah dibooking',
+    };
+  }
+
+  return {
+    dot: 'bg-neutral-400',
+    badge: 'bg-neutral-100 text-neutral-600 border-neutral-200',
+    label: 'Belum dicek',
+  };
+}
+
 /* ============================================================
    FLOATING PREVIEW CARD
    ============================================================ */
 
 function PreviewCard({
   group,
+  selectedDate,
+  selectedTime,
+  availabilityState,
   onClose,
 }: {
   group: SofaGroup;
+  selectedDate: string;
+  selectedTime: string;
+  availabilityState: AvailabilityState;
   onClose: () => void;
 }) {
-  const label = group.key;
-  const cfg = STATUS_CONFIG[group.status] ?? STATUS_CONFIG.available;
-
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -161,6 +150,7 @@ function PreviewCard({
 
   const representative = group.representative;
   const center = getGroupCenter(group);
+  const availability = getAvailabilityConfig(availabilityState);
 
   const cropWidth = Math.max(center.maxX - center.minX + CROP_PAD * 2, 140);
   const cropHeight = Math.max(center.maxY - center.minY + CROP_PAD * 2, 140);
@@ -171,13 +161,12 @@ function PreviewCard({
   const vbW = Math.min(cropSize, SVG_W);
   const vbH = Math.min(cropSize, SVG_H);
 
-  const STATUS_FILL: Record<string, string> = {
-    available: '#22c55e',
-    occupied: '#ef4444',
-    warning: '#f59e0b',
-    offline: '#9ca3af',
-  };
-  const highlightColor = STATUS_FILL[group.status] ?? '#22c55e';
+  const highlightColor =
+    availabilityState === 'available'
+      ? '#22c55e'
+      : availabilityState === 'unavailable'
+        ? '#ef4444'
+        : '#9ca3af';
 
   return (
     <div
@@ -199,11 +188,32 @@ function PreviewCard({
 
         <div className="mb-4 flex items-center gap-3 pr-10">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-base font-black text-white shadow-sm">
-            {label}
+            {group.key}
           </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-bold text-neutral-900">Sofa {label}</p>
-            <p className="text-xs text-neutral-500">Sofa · CW Coffee</p>
+            <p className="truncate text-sm font-bold text-neutral-900">Blok {group.key}</p>
+            <p className="text-xs text-neutral-500">Preview lokasi · CW Coffee</p>
+          </div>
+        </div>
+
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <div className="rounded-xl bg-neutral-50 p-3">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+              Tanggal dipilih
+            </p>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-800">
+              <CalendarDays className="h-3.5 w-3.5 text-neutral-500" />
+              <span>{selectedDate || '-'}</span>
+            </div>
+          </div>
+          <div className="rounded-xl bg-neutral-50 p-3">
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+              Waktu dipilih
+            </p>
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-neutral-800">
+              <Clock3 className="h-3.5 w-3.5 text-neutral-500" />
+              <span>{selectedTime || '-'}</span>
+            </div>
           </div>
         </div>
 
@@ -211,7 +221,7 @@ function PreviewCard({
           <svg
             viewBox={`${vbX} ${vbY} ${vbW} ${vbH}`}
             className="w-full"
-            aria-label={`Denah posisi sofa ${label}`}
+            aria-label={`Denah posisi blok ${group.key}`}
           >
             <image href="/Frame 112.svg" x="0" y="0" width={SVG_W} height={SVG_H} />
 
@@ -246,51 +256,27 @@ function PreviewCard({
               strokeWidth={3}
               rx={10}
               opacity={0.9}
-            >
-              <animate
-                attributeName="opacity"
-                values="0.9;0.3;0.9"
-                dur="1.4s"
-                repeatCount="indefinite"
-              />
-            </rect>
-
-            <circle
-              cx={center.cx}
-              cy={center.cy}
-              r={4}
-              fill={highlightColor}
-              stroke="white"
-              strokeWidth={1.5}
             />
           </svg>
         </div>
 
-        <div className="mb-3 grid grid-cols-3 gap-2">
+        <div className="mb-3 grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-neutral-50 p-3">
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
               Status
             </p>
             <div className="flex items-center gap-1.5">
-              <span className={`h-2 w-2 rounded-full ${cfg.dot}`} />
-              <span className="text-xs font-semibold text-neutral-800">{cfg.label}</span>
+              <span className={`h-2 w-2 rounded-full ${availability.dot}`} />
+              <span className="text-xs font-semibold text-neutral-800">{availability.label}</span>
             </div>
           </div>
           <div className="rounded-xl bg-neutral-50 p-3">
             <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-              Zona
+              Cakupan
             </p>
-            <p className="text-xs font-semibold text-neutral-800">Sofa</p>
-          </div>
-          <div className="rounded-xl bg-neutral-50 p-3">
-            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
-              Kapasitas
-            </p>
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3 shrink-0 text-neutral-500" />
-              <p className="text-xs font-semibold text-neutral-800">
-                {group.totalCount} sofa
-              </p>
+            <div className="flex items-center gap-1 text-xs font-semibold text-neutral-800">
+              <Users className="h-3.5 w-3.5 text-neutral-500" />
+              <span>{group.totalCount} sofa</span>
             </div>
           </div>
         </div>
@@ -316,29 +302,39 @@ function PreviewCard({
             </div>
           </div>
         )}
+
+        <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            Sofa dalam blok
+          </p>
+          <p className="mt-1 text-sm font-medium text-neutral-900">
+            {group.tables.map((table) => table.name).join(', ')}
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ============================================================
-   TABLE ROW
+   BLOCK ROW
    ============================================================ */
 
 function SofaRow({
   group,
+  availabilityState,
   isSelected,
   onSelect,
   onPreview,
 }: {
   group: SofaGroup;
+  availabilityState: AvailabilityState;
   isSelected: boolean;
   onSelect: () => void;
   onPreview: () => void;
 }) {
-  const label = group.key;
-  const cfg = STATUS_CONFIG[group.status] ?? STATUS_CONFIG.available;
-  const isAvailable = group.availableCount > 0;
+  const availability = getAvailabilityConfig(availabilityState);
+  const isAvailable = availabilityState === 'available';
 
   return (
     <div
@@ -347,7 +343,7 @@ function SofaRow({
           ? 'border-amber-400 bg-amber-50'
           : isAvailable
             ? 'border-neutral-200 bg-white hover:border-amber-200 hover:bg-amber-50/40'
-            : 'border-neutral-200 bg-neutral-50 opacity-55'
+            : 'border-neutral-200 bg-neutral-50 opacity-70'
       }`}
     >
       <div
@@ -356,10 +352,10 @@ function SofaRow({
             ? 'bg-amber-400 text-white'
             : isAvailable
               ? 'bg-neutral-100 text-neutral-800'
-              : 'bg-neutral-200 text-neutral-400'
+              : 'bg-neutral-200 text-neutral-500'
         }`}
       >
-        {label}
+        {group.key}
       </div>
 
       <div className="min-w-0 flex-1">
@@ -369,12 +365,12 @@ function SofaRow({
               isSelected ? 'text-amber-800' : 'text-neutral-900'
             }`}
           >
-            Sofa {label}
+            Blok {group.key}
           </p>
           <span
-            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${cfg.badge}`}
+            className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${availability.badge}`}
           >
-            {isAvailable ? `${group.availableCount} tersedia` : 'Tidak tersedia'}
+            {availability.label}
           </span>
         </div>
 
@@ -392,9 +388,6 @@ function SofaRow({
               </span>
             );
           })}
-          {group.representative.facilities.length === 0 && (
-            <span className="text-[11px] text-neutral-400">–</span>
-          )}
         </div>
       </div>
 
@@ -406,7 +399,7 @@ function SofaRow({
             onPreview();
           }}
           className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-400 shadow-sm transition hover:border-amber-300 hover:text-amber-600 active:scale-95"
-          aria-label={`Preview sofa ${label}`}
+          aria-label={`Preview blok ${group.key}`}
         >
           <Eye className="h-4 w-4" />
         </button>
@@ -418,7 +411,7 @@ function SofaRow({
           className={`flex h-9 w-9 items-center justify-center rounded-full transition-all ${
             isAvailable ? 'cursor-pointer' : 'cursor-not-allowed'
           }`}
-          aria-label={`Pilih sofa ${label}`}
+          aria-label={`Pilih blok ${group.key}`}
         >
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
@@ -442,18 +435,25 @@ function SofaRow({
    ============================================================ */
 
 function TableListSheet({
-  selectedName,
+  selectedCode,
+  selectedDate,
+  selectedTime,
+  availabilityByBlock,
+  isLoadingAvailability,
   onSelect,
   onClose,
 }: {
-  selectedName: string;
-  onSelect: (table: TableState) => void;
+  selectedCode: string;
+  selectedDate: string;
+  selectedTime: string;
+  availabilityByBlock: Record<string, boolean>;
+  isLoadingAvailability: boolean;
+  onSelect: (blockCode: string) => void;
   onClose: () => void;
 }) {
   const [previewGroup, setPreviewGroup] = useState<SofaGroup | null>(null);
 
   const groupedSofas = useMemo(() => buildSofaGroups(INITIAL_TABLES), []);
-  const availableCount = groupedSofas.filter((g) => g.availableCount > 0).length;
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -473,18 +473,11 @@ function TableListSheet({
 
   const handleSelect = useCallback(
     (group: SofaGroup) => {
-      if (group.availableCount === 0) return;
-
-      onSelect({
-        ...group.representative,
-        name: group.key,
-        zone: 'Sofa',
-        seatType: 'Sofa',
-      });
-
+      if (availabilityByBlock[group.key] === false) return;
+      onSelect(group.key);
       onClose();
     },
-    [onSelect, onClose]
+    [availabilityByBlock, onSelect, onClose]
   );
 
   return (
@@ -504,10 +497,10 @@ function TableListSheet({
 
         <div className="flex shrink-0 items-center justify-between px-5 py-3">
           <div>
-            <p className="text-base font-bold text-neutral-900">Pilih Sofa</p>
+            <p className="text-base font-bold text-neutral-900">Pilih Blok Sofa</p>
             <p className="text-xs text-neutral-500">
-              <span className="font-semibold text-emerald-600">{availableCount}</span> grup sofa
-              tersedia
+              Tanggal <span className="font-semibold text-neutral-700">{selectedDate}</span> ·{' '}
+              Waktu <span className="font-semibold text-neutral-700">{selectedTime}</span>
             </p>
           </div>
           <button
@@ -521,21 +514,50 @@ function TableListSheet({
 
         <div className="mx-5 mb-3 h-px shrink-0 bg-neutral-100" />
 
+        <div className="px-5 pb-3">
+          <div className="rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2.5 text-xs text-neutral-600">
+            {isLoadingAvailability
+              ? 'Memeriksa ketersediaan blok untuk jadwal yang dipilih...'
+              : 'Status blok di bawah sudah disesuaikan dengan tanggal dan waktu yang dipilih.'}
+          </div>
+        </div>
+
         <div className="flex-1 overflow-y-auto space-y-2 px-5 pb-6">
-          {groupedSofas.map((group) => (
-            <SofaRow
-              key={group.key}
-              group={group}
-              isSelected={selectedName === group.key}
-              onSelect={() => handleSelect(group)}
-              onPreview={() => setPreviewGroup(group)}
-            />
-          ))}
+          {groupedSofas.map((group) => {
+            const availabilityState: AvailabilityState = isLoadingAvailability
+              ? 'unknown'
+              : availabilityByBlock[group.key] === false
+                ? 'unavailable'
+                : 'available';
+
+            return (
+              <SofaRow
+                key={group.key}
+                group={group}
+                availabilityState={availabilityState}
+                isSelected={selectedCode === group.key}
+                onSelect={() => handleSelect(group)}
+                onPreview={() => setPreviewGroup(group)}
+              />
+            );
+          })}
         </div>
       </div>
 
       {previewGroup && (
-        <PreviewCard group={previewGroup} onClose={() => setPreviewGroup(null)} />
+        <PreviewCard
+          group={previewGroup}
+          selectedDate={selectedDate}
+          selectedTime={selectedTime}
+          availabilityState={
+            isLoadingAvailability
+              ? 'unknown'
+              : availabilityByBlock[previewGroup.key] === false
+                ? 'unavailable'
+                : 'available'
+          }
+          onClose={() => setPreviewGroup(null)}
+        />
       )}
     </>
   );
@@ -546,36 +568,55 @@ function TableListSheet({
    ============================================================ */
 
 export interface TablePickerProps {
-  selectedId: number | null;
-  selectedName: string;
-  onChange: (table: TableState) => void;
+  selectedCode: string;
+  selectedDate: string;
+  selectedTime: string;
+  availabilityByBlock: Record<string, boolean>;
+  isLoadingAvailability?: boolean;
+  disabled?: boolean;
+  onChange: (blockCode: string) => void;
 }
 
-export default function TablePicker({ selectedId, selectedName, onChange }: TablePickerProps) {
+export default function TablePicker({
+  selectedCode,
+  selectedDate,
+  selectedTime,
+  availabilityByBlock,
+  isLoadingAvailability = false,
+  disabled = false,
+  onChange,
+}: TablePickerProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const isReady = Boolean(selectedDate && selectedTime) && !disabled;
 
   return (
     <>
       <button
         type="button"
-        onClick={() => setSheetOpen(true)}
+        disabled={!isReady}
+        onClick={() => {
+          if (!isReady) return;
+          setSheetOpen(true);
+        }}
         className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-all active:scale-[0.985] ${
-          selectedId
-            ? 'border-amber-400 bg-amber-50 hover:border-amber-500'
-            : 'border-neutral-300 bg-white hover:border-amber-300'
+          !isReady
+            ? 'cursor-not-allowed border-neutral-200 bg-neutral-50 text-neutral-400'
+            : selectedCode
+              ? 'border-amber-400 bg-amber-50 hover:border-amber-500'
+              : 'border-neutral-300 bg-white hover:border-amber-300'
         }`}
       >
         <div className="flex min-w-0 items-center gap-3">
-          {selectedId ? (
+          {selectedCode ? (
             <>
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-400 text-sm font-black text-white shadow-sm">
-                {selectedName}
+                {selectedCode}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-neutral-900">Sofa {selectedName}</p>
+                <p className="truncate text-sm font-semibold text-neutral-900">Blok {selectedCode}</p>
                 <p className="flex items-center gap-1 text-xs text-neutral-500">
                   <MapPin className="h-3 w-3 shrink-0" />
-                  <span className="truncate">Sofa</span>
+                  <span className="truncate">Preview lokasi tersedia</span>
                 </p>
               </div>
             </>
@@ -584,20 +625,33 @@ export default function TablePicker({ selectedId, selectedName, onChange }: Tabl
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-400">
                 <MapPin className="h-4 w-4" />
               </span>
-              <p className="text-sm text-neutral-400">Pilih sofa…</p>
+              <div className="min-w-0">
+                <p className="text-sm text-neutral-400">
+                  {isReady ? 'Pilih blok sofa…' : 'Pilih tanggal & waktu dulu'}
+                </p>
+                {!isReady && (
+                  <p className="mt-0.5 text-xs text-neutral-400">
+                    Blok akan dicek setelah jadwal diisi
+                  </p>
+                )}
+              </div>
             </>
           )}
         </div>
         <ChevronRight
           className={`ml-2 h-4 w-4 shrink-0 transition-colors ${
-            selectedId ? 'text-amber-500' : 'text-neutral-400'
+            selectedCode && isReady ? 'text-amber-500' : 'text-neutral-400'
           }`}
         />
       </button>
 
-      {sheetOpen && (
+      {sheetOpen && isReady && (
         <TableListSheet
-          selectedName={selectedName}
+          selectedCode={selectedCode}
+          selectedDate={selectedDate}
+          selectedTime={selectedTime}
+          availabilityByBlock={availabilityByBlock}
+          isLoadingAvailability={isLoadingAvailability}
           onSelect={onChange}
           onClose={() => setSheetOpen(false)}
         />

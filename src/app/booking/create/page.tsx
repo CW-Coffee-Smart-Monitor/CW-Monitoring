@@ -7,8 +7,16 @@ import { ChevronLeft } from 'lucide-react';
 import BookingForm from '@/components/booking/BookingForm';
 import type { BookingFormValues } from '@/types/booking';
 import { auth } from '@/lib/firebase';
-import { saveReservation, getFirestoreErrorMessage } from '@/lib/firestoreService';
+import {
+  saveReservation,
+  getFirestoreErrorMessage,
+  hasReservationConflictForTables,
+} from '@/lib/firestoreService';
 import { getReservationTiming } from '@/lib/reservationUtils';
+import {
+  getCoveredTableIdsByBlock,
+  getCoveredTableNamesByBlock,
+} from '@/data/tables';
 
 export default function CreateBookingPage() {
   const router = useRouter();
@@ -18,8 +26,13 @@ export default function CreateBookingPage() {
   const handleCreateBooking = async (values: BookingFormValues) => {
     const user = auth.currentUser;
 
-    if (!values.tableId) {
-      setSubmitError('Silakan pilih meja terlebih dahulu.');
+    if (!user) {
+      setSubmitError('Sesi login tidak ditemukan. Silakan login ulang.');
+      return;
+    }
+
+    if (!values.blockCode) {
+      setSubmitError('Silakan pilih blok terlebih dahulu.');
       return;
     }
 
@@ -29,10 +42,32 @@ export default function CreateBookingPage() {
     try {
       const { expiresAt } = getReservationTiming(values.date, values.time);
 
+      const coveredTableIds = getCoveredTableIdsByBlock(values.blockCode);
+      const coveredTableNames = getCoveredTableNamesByBlock(values.blockCode);
+
+      if (coveredTableIds.length === 0) {
+        setSubmitError('Blok yang dipilih tidak memiliki sofa.');
+        return;
+      }
+
+      const hasConflict = await hasReservationConflictForTables({
+        coveredTableIds,
+        date: values.date,
+        arrivalTime: values.time,
+        durationMinutes: 30,
+      });
+
+      if (hasConflict) {
+        setSubmitError(`Blok ${values.blockCode} sudah terreservasi pada tanggal dan waktu tersebut.`);
+        return;
+      }
+
       await saveReservation({
-        tableId: values.tableId,
-        tableName: values.tableName,
-        guestName: user?.displayName || user?.email || 'Guest',
+        blockCode: values.blockCode,
+        coveredTableIds,
+        coveredTableNames,
+        reservationScope: 'block',
+        guestName: user.displayName || user.email || 'User',
         date: values.date,
         arrivalTime: values.time,
         duration: 'bebas',
@@ -42,10 +77,9 @@ export default function CreateBookingPage() {
         expiresAt,
         source: 'form',
         branch: values.branch,
-        room: values.room,
         note: values.note || '',
-        userId: user?.uid || 'guest',
-        userEmail: user?.email || '',
+        userId: user.uid,
+        userEmail: user.email || '',
         paymentProofName: values.paymentProof?.name || '',
       });
 
@@ -73,7 +107,7 @@ export default function CreateBookingPage() {
         </Link>
         <div>
           <h1 className="text-lg font-bold text-neutral-900">Buat Reservasi</h1>
-          <p className="text-xs text-neutral-500">Isi form untuk membuat booking baru.</p>
+          <p className="text-xs text-neutral-500">Isi form untuk membuat reservasi untuk banyak orang.</p>
         </div>
       </div>
 

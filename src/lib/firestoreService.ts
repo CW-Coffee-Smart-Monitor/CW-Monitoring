@@ -9,6 +9,7 @@ import {
   onSnapshot,
   setDoc,
   addDoc,
+  getDocs,
   serverTimestamp,
   query,
   where,
@@ -18,6 +19,7 @@ import {
 import { db } from './firebase';
 import { BookingRecord, TableStatus } from '@/types';
 import type { Reservation, ReservationStatus } from '@/types/reservation';
+import { buildReservationDateTime } from '@/lib/reservationUtils';
 
 const RESERVATIONS_COLLECTION = 'reservations';
 type ReservationListenerError = (error: unknown) => void;
@@ -155,4 +157,134 @@ export async function updateReservationStatus(
   status: ReservationStatus
 ): Promise<void> {
   await setDoc(doc(db, RESERVATIONS_COLLECTION, id), { status }, { merge: true });
+}
+
+// ─── Conflict helpers ─────────────────────────────────────────
+
+function hasAnyOverlap(a: number[], b: number[]): boolean {
+  const setB = new Set(b);
+  return a.some((id) => setB.has(id));
+}
+
+function getReservationCoveredTableIds(reservation: Reservation): number[] {
+  if (reservation.coveredTableIds?.length) return reservation.coveredTableIds;
+  if (reservation.tableId != null) return [reservation.tableId];
+  return [];
+}
+
+function getReservationStartTimestamp(reservation: Reservation): number {
+  return buildReservationDateTime(reservation.date, reservation.arrivalTime).getTime();
+}
+
+function getReservationEndTimestamp(reservation: Reservation): number {
+  if (typeof reservation.expiresAt === 'number') return reservation.expiresAt;
+
+  const start = getReservationStartTimestamp(reservation);
+  const tolerance = reservation.toleranceMinutes ?? 60;
+  return start + tolerance * 60 * 1000;
+}
+
+function doesReservationOverlapRequestedSlot(params: {
+  reservation: Reservation;
+  date: string;
+  arrivalTime: string;
+  durationMinutes?: number;
+}): boolean {
+  const { reservation, date, arrivalTime, durationMinutes = 30 } = params;
+
+  if (reservation.date !== date) return false;
+  if (reservation.status !== 'pending' && reservation.status !== 'confirmed') return false;
+
+  const requestedStart = buildReservationDateTime(date, arrivalTime).getTime();
+  const requestedEnd = requestedStart + durationMinutes * 60 * 1000;
+
+  const existingStart = getReservationStartTimestamp(reservation);
+  const existingEnd = getReservationEndTimestamp(reservation);
+
+  return requestedStart < existingEnd && requestedEnd > existingStart;
+}
+
+export async function hasReservationConflictForTables(params: {
+  coveredTableIds: number[];
+  date: string;
+  arrivalTime: string;
+  durationMinutes?: number;
+}): Promise<boolean> {
+  const { coveredTableIds, date, arrivalTime, durationMinutes = 30 } = params;
+
+  if (coveredTableIds.length === 0) return false;
+
+  const ref = query(
+    collection(db, RESERVATIONS_COLLECTION),
+    where('date', '==', date),
+    where('status', 'in', ['pending', 'confirmed'])
+  );
+
+  const snapshot = await getDocs(ref);
+
+  for (const docSnap of snapshot.docs) {
+    const reservation = { id: docSnap.id, ...docSnap.data() } as Reservation;
+    const existingCoveredIds = getReservationCoveredTableIds(reservation);
+
+    if (!hasAnyOverlap(coveredTableIds, existingCoveredIds)) continue;
+
+    if (
+      doesReservationOverlapRequestedSlot({
+        reservation,
+        date,
+        arrivalTime,
+        durationMinutes,
+      })
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export async function getBlockAvailabilityForDateTime(params: {
+  blocks: Array<{ code: string; coveredTableIds: number[] }>;
+  date: string;
+  arrivalTime: string;
+  durationMinutes?: number;
+}): Promise<Record<string, boolean>> {
+  const { blocks, date, arrivalTime, durationMinutes = 30 } = params;
+
+  if (!date || !arrivalTime) {
+    return Object.fromEntries(blocks.map((block) => [block.code, true]));
+  }
+
+  const ref = query(
+    collection(db, RESERVATIONS_COLLECTION),
+    where('date', '==', date),
+    where('status', 'in', ['pending', 'confirmed'])
+  );
+
+  const snapshot = await getDocs(ref);
+
+  const activeReservations: Reservation[] = snapshot.docs.map(
+    (docSnap) => ({ id: docSnap.id, ...docSnap.data() } as Reservation)
+  );
+
+  const availability: Record<string, boolean> = {};
+
+  for (const block of blocks) {
+    const hasConflict = activeReservations.some((reservation) => {
+      const existingCoveredIds = getReservationCoveredTableIds(reservation);
+
+      if (!hasAnyOverlap(block.coveredTableIds, existingCoveredIds)) return false;
+
+      return doesReservationOverlapRequestedSlot({
+        reservation,
+        date,
+        arrivalTime,
+        durationMinutes,
+      });
+    });
+
+    availability[block.code] = !hasConflict;
+  }
+
+  return availability;
 }

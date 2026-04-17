@@ -38,7 +38,7 @@ export default function BookingHistory({ bookings }: BookingHistoryProps) {
                     {booking.branch}
                   </h3>
                   <p className="mt-0.5 text-sm text-neutral-500">
-                    {booking.room} - {booking.tableName}
+                    Blok {booking.blockCode}
                   </p>
                 </div>
                 <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${badge.className}`}>
