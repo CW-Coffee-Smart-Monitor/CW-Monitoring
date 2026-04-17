@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import Link from 'next/link';
+import MasukButton from '@/components/landing/MasukButton';
 import {
   ChevronDown,
   Plus,
@@ -132,12 +133,9 @@ export default function LandingPage() {
 
           {/* CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/map"
-              className="border border-white px-5 py-2 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-white hover:text-[#4B135F]"
-            >
+            <MasukButton className="border border-white px-5 py-2 text-xs font-bold uppercase tracking-widest text-white transition hover:bg-white hover:text-[#4B135F]">
               Masuk
-            </Link>
+            </MasukButton>
           </div>
 
           {/* Mobile toggle */}
@@ -169,12 +167,9 @@ export default function LandingPage() {
                     {link.label}
                   </a>
                 ))}
-                <Link
-                  href="/map"
-                  className="mt-2 border border-white px-5 py-2 text-center text-xs font-bold uppercase tracking-widest text-white"
-                >
-                  Cek Meja Sekarang
-                </Link>
+                <MasukButton className="mt-2 border border-white px-5 py-2 text-center text-xs font-bold uppercase tracking-widest text-white">
+                  Masuk
+                </MasukButton>
               </div>
             </motion.div>
           )}

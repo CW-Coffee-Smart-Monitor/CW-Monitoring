@@ -35,7 +35,7 @@ export default function LoginPage() {
         // Cookie sudah di-set, lanjutkan redirect meskipun gagal
       }
       setIsLoading(false);
-      router.push('/'); // ganti sesuai halaman tujuan kamu
+      router.push('/home');
     } else {
       setIsLoading(false);
       const data = await response.json();
