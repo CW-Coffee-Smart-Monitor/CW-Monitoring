@@ -5,8 +5,8 @@
  * Shows real-time table status on an SVG café layout.
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { Sparkles, ChevronDown, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
 import { useTableContext } from '@/context/TableContext';
 import { TABLE_ROOMS } from '@/data/tables';
 import FloorPlan from '@/components/map/FloorPlan';
@@ -29,27 +29,14 @@ export default function MapPage() {
   const { tables } = useTableContext();
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [roomFilter, setRoomFilter] = useState<string | null>('AC1');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<string>('Baru saja');
   const [recommendedId, setRecommendedId] = useState<number | null>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const filteredTables = roomFilter
     ? tables.filter((t) => TABLE_ROOMS[t.id] === roomFilter)
     : tables;
   const availableCount = filteredTables.filter((t) => t.status === 'available').length;
   const activeRoom = ROOMS.find((r) => r.key === roomFilter) ?? ROOMS[0];
-
-  /* Close dropdown on outside click */
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   /* Timestamp update every 30s */
   useEffect(() => {
@@ -83,95 +70,77 @@ export default function MapPage() {
   };
 
   return (
-    <section className="flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-bold text-neutral-900">Live Map</h1>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block h-2 w-2 rounded-full bg-[#4B135F] animate-pulse" />
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#4B135F]">
-              Terakhir diperbarui: {lastUpdate}
-            </span>
-          </div>
-        </div>
+    <section className="flex flex-col gap-4 pb-6">
 
-        {/* Available count badge */}
-        <div className="flex flex-col items-end shrink-0">
-          <span className="text-xl font-bold text-green-600">{availableCount}</span>
-          <span className="text-[10px] text-neutral-500">dari {filteredTables.length} tersedia</span>
-        </div>
-      </div>
+      {/* ── Header Card ── */}
+      <div className="relative overflow-hidden rounded-2xl bg-[#4B135F] px-5 py-5 shadow-lg">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-white/5" />
 
-      {/* Room Dropdown */}
-      <div className="relative" ref={dropdownRef}>
-        <button
-          onClick={() => setDropdownOpen((o) => !o)}
-          className="flex w-full items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-white px-4 py-3 shadow-sm transition-colors hover:border-neutral-300"
-        >
-          <div className="flex items-center gap-2.5">
-            <MapPin className="h-4 w-4 text-[#4B135F]" />
-            <span className="text-sm font-semibold text-neutral-800">{activeRoom.label}</span>
-            {roomFilter && (
-              <span className="rounded-full bg-[#4B135F]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#4B135F]">
-                aktif
+        <div className="relative flex items-start justify-between gap-2">
+          <div>
+            <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
+              CW Coffee · Floor Plan
+            </p>
+            <h1 className="text-2xl font-extrabold tracking-tight text-white">Live Map</h1>
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-400" />
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-white/60">
+                Diperbarui: {lastUpdate}
               </span>
-            )}
+            </div>
           </div>
-          <ChevronDown
-            className={`h-4 w-4 text-neutral-400 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
 
-        {/* Dropdown list */}
-        {dropdownOpen && (
-          <div className="absolute left-0 right-0 top-full z-40 mt-1.5 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl">
-            {ROOMS.map((room) => {
-              const isActive = roomFilter === room.key;
-              const count = tables.filter((t) => TABLE_ROOMS[t.id] === room.key && t.status === 'available').length;
-              const total = tables.filter((t) => TABLE_ROOMS[t.id] === room.key).length;
-              const isOffline = !room.available;
-              let rowClass = 'hover:bg-neutral-50';
-              if (isOffline) rowClass = 'cursor-not-allowed opacity-50';
-              else if (isActive) rowClass = 'bg-[#4B135F]/5 hover:bg-[#4B135F]/10';
-
-              let labelClass = 'text-neutral-700';
-              if (isActive) labelClass = 'text-[#4B135F] font-semibold';
-              else if (isOffline) labelClass = 'text-neutral-400';
-
-              return (
-                <button
-                  key={String(room.key)}
-                  onClick={() => {
-                    if (isOffline) return;
-                    setRoomFilter(room.key); setDropdownOpen(false);
-                  }}
-                  className={`flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors ${rowClass}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">{room.emoji}</span>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${labelClass}`}>
-                        {room.label}
-                      </span>
-                      {isOffline && (
-                        <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-neutral-400">
-                          Segera
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <span className={`text-xs font-semibold ${count > 0 ? 'text-green-600' : 'text-neutral-400'}`}>
-                    {count}/{total}
-                  </span>
-                </button>
-              );
-            })}
+          {/* Available badge */}
+          <div className="flex flex-col items-center rounded-xl bg-white/10 px-4 py-2.5">
+            <span className="text-2xl font-extrabold leading-none text-white">{availableCount}</span>
+            <span className="mt-0.5 text-[9px] font-semibold uppercase tracking-wider text-white/60">Tersedia</span>
+            <span className="text-[9px] text-white/40">dari {filteredTables.length}</span>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Kebutuhan Saya quick-filter */}
+      {/* ── Room Selector (horizontal pills) ── */}
+      <div>
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+          Pilih Ruangan
+        </p>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {ROOMS.map((room) => {
+            const isActive = roomFilter === room.key;
+            const count = tables.filter((t) => TABLE_ROOMS[t.id] === room.key && t.status === 'available').length;
+            const total = tables.filter((t) => TABLE_ROOMS[t.id] === room.key).length;
+            const isOffline = !room.available;
+
+            let btnClass = 'border-neutral-200 bg-white text-neutral-700 hover:border-[#4B135F]/40 hover:bg-[#4B135F]/5';
+            if (isActive) btnClass = 'border-[#4B135F] bg-[#4B135F] text-white shadow-md';
+            else if (isOffline) btnClass = 'cursor-not-allowed border-neutral-100 bg-neutral-50 opacity-50';
+
+            let countClass = 'text-neutral-400';
+            if (!isOffline && count > 0) countClass = isActive ? 'text-green-300' : 'text-green-600';
+            else if (!isOffline && isActive) countClass = 'text-white/50';
+
+            return (
+              <button
+                key={room.key}
+                onClick={() => { if (!isOffline) setRoomFilter(room.key); }}
+                disabled={isOffline}
+                className={`flex shrink-0 flex-col items-center gap-1 rounded-2xl border px-4 py-3 transition-all ${btnClass}`}
+              >
+                <span className="text-xl leading-none">{room.emoji}</span>
+                <span className={`text-[11px] font-semibold ${isActive ? 'text-white' : 'text-neutral-700'}`}>
+                  {room.label}
+                </span>
+                <span className={`text-[10px] font-bold ${countClass}`}>
+                  {isOffline ? 'Segera' : `${count}/${total}`}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Quick Filter ── */}
       <div>
         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
           Kebutuhan Saya
@@ -183,13 +152,13 @@ export default function MapPage() {
               <button
                 key={qf.filterKey}
                 onClick={() => setActiveFilter(isActive ? null : qf.filterKey)}
-                className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-2.5 text-sm font-medium transition-colors ${
+                className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-2.5 text-[13px] font-semibold transition-all ${
                   isActive
-                    ? 'border-[#4B135F] bg-[#4B135F]/10 text-[#4B135F]'
-                    : 'border-neutral-200 bg-neutral-50 text-neutral-700 hover:border-neutral-300'
+                    ? 'border-[#4B135F] bg-[#4B135F] text-white shadow-sm'
+                    : 'border-neutral-200 bg-white text-neutral-600 hover:border-[#4B135F]/40 hover:bg-[#4B135F]/5'
                 }`}
               >
-                <span>{qf.emoji}</span>
+                <span className="text-base">{qf.emoji}</span>
                 {qf.label}
               </button>
             );
@@ -197,15 +166,13 @@ export default function MapPage() {
         </div>
       </div>
 
-
-
-      {/* Rekomendasikan Meja */}
+      {/* ── Recommend Button ── */}
       <button
         onClick={handleRecommend}
-        className="flex items-center justify-center gap-2 rounded-2xl bg-[#4B135F] py-3 text-sm font-semibold text-white shadow-md transition-opacity hover:opacity-90 active:opacity-80"
+        className="flex items-center justify-center gap-2 rounded-2xl bg-[#D07E20] py-3.5 text-sm font-bold text-white shadow-md transition-all hover:bg-[#b86d1a] hover:shadow-lg active:scale-[0.98]"
       >
         <Sparkles className="h-4 w-4" />
-        Rekomendasikan Meja
+        Rekomendasikan Meja Terbaik
       </button>
 
       {/* Floor plan or offline placeholder */}

@@ -13,7 +13,7 @@ import { Radio, MonitorSmartphone, Menu, X, Home, Map, CalendarClock, User, Bell
 import { useTableContext } from '@/context/TableContext';
 
 const NAV_ITEMS = [
-  { href: '/',        label: 'Home',    icon: Home,          desc: 'Dashboard utama' },
+  { href: '/home',    label: 'Home',    icon: Home,          desc: 'Dashboard utama' },
   { href: '/map',     label: 'Map',     icon: Map,           desc: 'Peta lantai live' },
   { href: '/booking', label: 'Booking', icon: CalendarClock, desc: 'Reservasi meja' },
   { href: '/profile', label: 'Profile', icon: User,          desc: 'Akun & pengaturan' },
@@ -30,7 +30,8 @@ export default function Header() {
         <div className="mx-auto flex max-w-md items-center justify-between px-5 py-4">
           {/* Brand */}
           <div className="flex items-center gap-2">
-            <Image src="/CW Club.png" alt="CW Club Logo" width={36} height={36} className="object-contain" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/CWClub.png" alt="CWClub Logo" className="h-9 w-9 object-contain" />
             <span className="text-base font-bold tracking-wide text-white">
               CW<span className="text-[#ffffff]">Monitor</span>
             </span>
