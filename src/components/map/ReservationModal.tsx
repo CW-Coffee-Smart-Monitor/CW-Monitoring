@@ -7,6 +7,7 @@ import type { TableState } from '@/types';
 import type { ReservationDuration } from '@/types/reservation';
 import { saveReservation } from '@/lib/firestoreService';
 import { useTableContext } from '@/context/TableContext';
+import { auth } from '@/lib/firebase';
 
 interface ReservationModalProps {
   readonly table: TableState;
@@ -77,6 +78,7 @@ export default function ReservationModal({ table, onClose }: ReservationModalPro
         tableId:          table.id,
         tableName:        table.name,
         guestName:        guestName.trim(),
+        userId:           auth.currentUser?.uid,
         date:             todayStr,
         arrivalTime,
         duration,
