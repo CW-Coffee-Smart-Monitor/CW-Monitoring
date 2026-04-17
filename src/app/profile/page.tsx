@@ -35,10 +35,6 @@ export default function ProfilePage() {
 
       {/* Profile */}
       <ProfileCard
-        name="Aditya"
-        email="aditya.dev@example.com"
-        imageUrl="https://i.pravatar.cc/150?img=3"
-        membership="MEMBER PREMIUM"
       />
 
       {/* Mode */}

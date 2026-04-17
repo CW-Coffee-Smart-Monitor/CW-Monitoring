@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import {
   ArrowLeft,
   CreditCard,
@@ -19,6 +21,7 @@ export default function SettingsPage() {
   const [isPublic, setIsPublic] = useState(true);
 
   const handleLogout = async () => {
+    await signOut(auth);
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/auth/login');
   };

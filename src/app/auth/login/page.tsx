@@ -35,7 +35,7 @@ export default function LoginPage() {
         // Cookie sudah di-set, lanjutkan redirect meskipun gagal
       }
       setIsLoading(false);
-      router.push('/'); // ganti sesuai halaman tujuan kamu
+      router.push('/home');
     } else {
       setIsLoading(false);
       const data = await response.json();
@@ -101,9 +101,9 @@ export default function LoginPage() {
         {/* Options */}
         <div className="flex justify-between text-sm text-neutral-600">
           <span className="cursor-pointer">Ingat Saya</span>
-          <span className="cursor-pointer font-medium text-neutral-900">
+          <Link href="/auth/forgot-password"className="cursor-pointer font-medium text-neutral-900">
             Lupa Sandi?
-          </span>
+          </Link>
         </div>
 
         {/* Button */}
