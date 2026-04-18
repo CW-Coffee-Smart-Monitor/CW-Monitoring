@@ -6,12 +6,14 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { subscribeToUserReservations } from '@/lib/firestoreService';
 import type { Reservation } from '@/types/reservation';
+import { useRouter } from 'next/navigation';
 
 export default function HistoryCard() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [latestReservation, setLatestReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('Memuat riwayat...');
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
@@ -97,7 +99,10 @@ export default function HistoryCard() {
   }, [latestReservation, loading, message]);
 
   return (
-    <div className="rounded-2xl p-4 shadow-sm flex justify-between items-center">
+    <div
+  onClick={() => router.push('/booking')}
+  className="rounded-2xl p-4 shadow-sm flex justify-between items-center cursor-pointer hover:shadow-md transition"
+    >
       <div className={loading ? 'w-full rounded-2xl border border-amber-200 bg-amber-50 p-4' : 'bg-white w-full rounded-2xl p-4'}>
         <p className="text-xs text-neutral-400">RIWAYAT KUNJUNGAN</p>
         <h4 className="mt-1 font-semibold text-neutral-900">{content.title}</h4>
