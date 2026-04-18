@@ -27,6 +27,15 @@ function getBlockCodeFromReservation(reservation: Reservation): string {
   return '-';
 }
 
+function getBlockLabelFromReservation(reservation: Reservation): string {
+  if (reservation.reservationScope === 'single-table') {
+    return reservation.tableName ?? `Meja ${getBlockCodeFromReservation(reservation)}`;
+  }
+
+  const blockCode = getBlockCodeFromReservation(reservation);
+  return `Blok ${blockCode}`;
+}
+
 export default function BookingPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -92,6 +101,7 @@ export default function BookingPage() {
         id: reservation.id,
         branch: reservation.branch ?? 'CW Coffee',
         blockCode: getBlockCodeFromReservation(reservation),
+        blockLabel: getBlockLabelFromReservation(reservation),
         date: reservation.date,
         time: reservation.arrivalTime,
         note: reservation.note ?? '',
