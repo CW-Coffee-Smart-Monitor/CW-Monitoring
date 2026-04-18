@@ -61,19 +61,27 @@ export default function HistoryBookingPage() {
 
   const bookings = useMemo<BookingItem[]>(
     () =>
-      reservations.map((reservation) => ({
-        id: reservation.id,
-        branch: reservation.branch ?? "CW Coffee",
-        room: reservation.room ?? "-",
-        date: reservation.date,
-        tableId: reservation.tableId,
-        tableName: reservation.tableName,
-        time: reservation.arrivalTime,
-        note: reservation.note ?? "",
-        status: reservation.status === "cancelled" ? "cancelled" : reservation.status,
-        createdAt: reservation.createdAt,
-        paymentProof: null,
-      })),
+      reservations.map((reservation) => {
+        const isSingleTable = reservation.reservationScope === "single-table";
+        const fallbackBlockCode =
+          reservation.tableName?.trim().charAt(0).toUpperCase() ?? "-";
+        const blockCode = reservation.blockCode ?? fallbackBlockCode;
+
+        return {
+          id: reservation.id,
+          branch: reservation.branch ?? "CW Coffee",
+          blockCode,
+          blockLabel: isSingleTable
+            ? reservation.tableName ?? `Meja ${blockCode}`
+            : `Blok ${blockCode}`,
+          date: reservation.date,
+          time: reservation.arrivalTime,
+          note: reservation.note ?? "",
+          status: reservation.status === "cancelled" ? "cancelled" : reservation.status,
+          createdAt: reservation.createdAt,
+          paymentProof: null,
+        };
+      }),
     [reservations]
   );
 

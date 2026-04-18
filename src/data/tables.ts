@@ -286,3 +286,63 @@ export const INITIAL_TABLES: TableState[] = [
     zone: 'Sofa', seatType: 'Sofa',
   },
 ];
+
+// ────────────────────────────
+// Block/group helpers for booking page
+// Tidak mengubah struktur lama.
+// Dipakai untuk reservasi per blok (A, B, C, dst.)
+// ────────────────────────────
+
+export interface TableBlockOption {
+  code: string;
+  label: string;
+  tableIds: number[];
+  tableNames: string[];
+}
+
+export function getBlockCodeFromTableName(tableName: string): string {
+  return tableName.trim().charAt(0).toUpperCase();
+}
+
+export function getTablesByBlock(blockCode: string): TableState[] {
+  const normalized = blockCode.trim().toUpperCase();
+  return INITIAL_TABLES.filter(
+    (table) => getBlockCodeFromTableName(table.name) === normalized
+  );
+}
+
+export function getCoveredTableIdsByBlock(blockCode: string): number[] {
+  return getTablesByBlock(blockCode).map((table) => table.id);
+}
+
+export function getCoveredTableNamesByBlock(blockCode: string): string[] {
+  return getTablesByBlock(blockCode).map((table) => table.name);
+}
+
+export function getAvailableBlockCodes(): string[] {
+  return Array.from(
+    new Set(INITIAL_TABLES.map((table) => getBlockCodeFromTableName(table.name)))
+  ).sort();
+}
+
+export function getTableBlockOptions(): TableBlockOption[] {
+  return getAvailableBlockCodes().map((code) => {
+    const tables = getTablesByBlock(code);
+    return {
+      code,
+      label: `Blok ${code}`,
+      tableIds: tables.map((table) => table.id),
+      tableNames: tables.map((table) => table.name),
+    };
+  });
+}
+
+export function findBlockCodeByTableId(tableId: number): string | null {
+  const table = INITIAL_TABLES.find((item) => item.id === tableId);
+  if (!table) return null;
+  return getBlockCodeFromTableName(table.name);
+}
+
+export function isTableInBlock(tableId: number, blockCode: string): boolean {
+  return getCoveredTableIdsByBlock(blockCode).includes(tableId);
+}

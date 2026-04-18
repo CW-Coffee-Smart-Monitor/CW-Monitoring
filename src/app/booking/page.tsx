@@ -13,6 +13,29 @@ import {
 } from '@/lib/firestoreService';
 import { auth } from '@/lib/firebase';
 
+function getBlockCodeFromReservation(reservation: Reservation): string {
+  if (reservation.blockCode) return reservation.blockCode;
+
+  if (reservation.tableName) {
+    return reservation.tableName.trim().charAt(0).toUpperCase();
+  }
+
+  if (reservation.coveredTableNames && reservation.coveredTableNames.length > 0) {
+    return reservation.coveredTableNames[0].trim().charAt(0).toUpperCase();
+  }
+
+  return '-';
+}
+
+function getBlockLabelFromReservation(reservation: Reservation): string {
+  if (reservation.reservationScope === 'single-table') {
+    return reservation.tableName ?? `Meja ${getBlockCodeFromReservation(reservation)}`;
+  }
+
+  const blockCode = getBlockCodeFromReservation(reservation);
+  return `Blok ${blockCode}`;
+}
+
 export default function BookingPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -28,7 +51,7 @@ export default function BookingPage() {
       setCurrentUser(user);
       setLoading(false);
     });
-    
+
     return () => unsubscribeAuth();
   }, []);
 
@@ -77,10 +100,9 @@ export default function BookingPage() {
       reservations.map((reservation) => ({
         id: reservation.id,
         branch: reservation.branch ?? 'CW Coffee',
-        room: reservation.room ?? '-',
+        blockCode: getBlockCodeFromReservation(reservation),
+        blockLabel: getBlockLabelFromReservation(reservation),
         date: reservation.date,
-        tableId: reservation.tableId,
-        tableName: reservation.tableName,
         time: reservation.arrivalTime,
         note: reservation.note ?? '',
         status: reservation.status === 'cancelled' ? 'cancelled' : reservation.status,

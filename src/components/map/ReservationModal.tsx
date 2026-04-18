@@ -75,18 +75,23 @@ export default function ReservationModal({ table, onClose }: ReservationModalPro
       const expiresAt = arrivalDate.getTime() + TOLERANCE_MINUTES * 60 * 1000;
 
       const id = await saveReservation({
-        tableId:          table.id,
-        tableName:        table.name,
-        guestName:        guestName.trim(),
-        userId:           auth.currentUser?.uid,
-        date:             todayStr,
+        tableId: table.id,
+        tableName: table.name,
+        blockCode: table.name.charAt(0).toUpperCase(),
+        coveredTableIds: [table.id],
+        coveredTableNames: [table.name],
+        reservationScope: 'single-table',
+
+        guestName: guestName.trim(),
+        userId: auth.currentUser?.uid,
+        date: todayStr,
         arrivalTime,
         duration,
         toleranceMinutes: TOLERANCE_MINUTES,
-        status:           'pending',
-        createdAt:        new Date().toISOString(),
+        status: 'pending',
+        createdAt: new Date().toISOString(),
         expiresAt,
-        source:           'map',
+        source: 'map',
       });
 
       reserveTable(table.id, id, guestName.trim(), expiresAt);

@@ -25,6 +25,7 @@ import { INITIAL_TABLES } from '@/data/tables';
 import { CONFIG } from '@/lib/config';
 import { saveBookingRecord, subscribeToActiveReservations, updateReservationStatus, type TableDoc } from '@/lib/firestoreService';
 import { subscribeToRTDB } from '@/lib/rtdbService';
+import { isReservationBlockingLiveTable } from '@/lib/reservationUtils';
 
 // ──────────────────────────── Types ────────────────────────────
 
@@ -268,14 +269,20 @@ function tableReducer(state: State, action: Action): State {
       const newReservedS = new Set<number>();
       // Build map: tableId → most recent active reservation
       const activeByTable = new Map<number, Reservation>();
+
       for (const res of action.reservations) {
-        if (res.expiresAt > now) {
-          const existing = activeByTable.get(res.tableId);
+        if (!isReservationBlockingLiveTable(res, now)) continue;
+
+        const coveredIds = res.coveredTableIds ?? (res.tableId ? [res.tableId] : []);
+
+        for (const tableId of coveredIds) {
+          const existing = activeByTable.get(tableId);
           if (!existing || existing.expiresAt < res.expiresAt) {
-            activeByTable.set(res.tableId, res);
+            activeByTable.set(tableId, res);
           }
         }
       }
+      
       const updatedTables = state.tables.map((t) => {
         const activeRes = activeByTable.get(t.id);
         const wasReserved = state.reservedTables.has(t.id);
