@@ -32,7 +32,7 @@ export default function Header() {
     <div className="sticky top-0 z-40">
 
       {/* ── TIER 1: Announcement / status bar (desktop only) ── */}
-      <div className="hidden bg-[#2a0838] px-6 py-2 md:block">
+      <div className="hidden bg-[#4B135F] px-6 py-2 md:block">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-center gap-3">
           <span className="rounded-full bg-[#D07E20] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
             Live
@@ -45,7 +45,7 @@ export default function Header() {
       </div>
 
       {/* ── TIER 2: Main header ── */}
-      <header className="border-b border-neutral-150 bg-white shadow-sm">
+      <header className="border-b border-[#3a0f49] bg-[#4B135F] shadow-sm">
 
         {/* Desktop */}
         <div className="hidden items-center gap-6 px-8 py-5 md:flex">
@@ -54,11 +54,11 @@ export default function Header() {
           <Link href="/home" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/CWClub.png" alt="CWClub Logo" className="h-10 w-10 object-contain" />
-            <span className="text-lg font-bold tracking-wide text-[#4B135F]">CWMonitor</span>
+            <span className="text-lg font-bold tracking-wide text-white">CWMonitor</span>
           </Link>
 
           {/* Divider */}
-          <div className="h-5 w-px bg-neutral-200" />
+          <div className="h-5 w-px bg-white/20" />
 
           {/* Nav links */}
           <nav className="flex items-center gap-0.5">
@@ -70,13 +70,13 @@ export default function Header() {
                   href={item.href}
                   className={`relative rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'text-[#4B135F]'
-                      : 'text-neutral-500 hover:text-neutral-900'
+                      ? 'text-white'
+                      : 'text-white/60 hover:text-white'
                   }`}
                 >
                   {item.label}
                   {isActive && (
-                    <span className="absolute bottom-0.5 left-4 right-4 h-0.5 rounded-full bg-[#4B135F]" />
+                    <span className="absolute bottom-0.5 left-4 right-4 h-0.5 rounded-full bg-white" />
                   )}
                 </Link>
               );
@@ -90,18 +90,18 @@ export default function Header() {
           <div className="flex items-center gap-2">
 
             {/* Notification bell */}
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-900">
+            <button className="relative flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white">
               <Bell className="h-4.5 w-4.5" />
               <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500" />
             </button>
 
             {/* Divider */}
-            <div className="mx-1 h-5 w-px bg-neutral-200" />
+            <div className="mx-1 h-5 w-px bg-white/20" />
 
             {/* Simulation toggle */}
             <button
               onClick={toggleSimulation}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
             >
               {isSimulation ? (
                 <>
@@ -124,7 +124,7 @@ export default function Header() {
             {/* CTA — "Pesan Meja" pill button */}
             <Link
               href="/booking"
-              className="rounded-full bg-[#4B135F] px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#3a0f49] hover:shadow-md active:scale-[0.97]"
+              className="rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#4B135F] shadow-sm transition-all hover:bg-white/90 hover:shadow-md active:scale-[0.97]"
             >
               Pesan Meja
             </Link>
@@ -140,15 +140,15 @@ export default function Header() {
         <div className="flex items-center gap-3 px-4 py-3 md:hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/CWClub.png" alt="CWClub Logo" className="h-8 w-8 object-contain" />
-          <span className="text-base font-bold tracking-wide text-[#4B135F]">CWMonitor</span>
+          <span className="text-base font-bold tracking-wide text-white">CWMonitor</span>
           <div className="flex-1" />
-          <button className="relative flex h-9 w-9 items-center justify-center rounded-full text-neutral-500 hover:bg-neutral-100">
+          <button className="relative flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10">
             <Bell className="h-4.5 w-4.5" />
             <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500" />
           </button>
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-600 transition-colors hover:bg-neutral-100"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/70 transition-colors hover:bg-white/10"
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
