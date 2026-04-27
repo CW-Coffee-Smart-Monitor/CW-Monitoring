@@ -9,6 +9,7 @@ import { getBlockAvailabilityForDateTime } from '@/lib/firestoreService';
 
 interface BookingFormProps {
   onSubmit: (values: BookingFormValues) => void | Promise<void>;
+  readonly initialBlockCode?: string;
 }
 
 const BLOCK_OPTIONS = getTableBlockOptions();
@@ -26,8 +27,11 @@ const initialForm: BookingFormValues = {
   paymentProof: null,
 };
 
-export default function BookingForm({ onSubmit }: BookingFormProps) {
-  const [form, setForm] = useState<BookingFormValues>(initialForm);
+export default function BookingForm({ onSubmit, initialBlockCode }: BookingFormProps) {
+  const [form, setForm] = useState<BookingFormValues>(() => ({
+    ...initialForm,
+    blockCode: initialBlockCode ?? '',
+  }));
   const [selectedHour, setSelectedHour] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [availabilityByBlock, setAvailabilityByBlock] = useState<Record<string, boolean>>({});

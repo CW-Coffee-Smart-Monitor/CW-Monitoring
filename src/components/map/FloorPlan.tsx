@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useTableContext } from '@/context/TableContext';
 import { TABLE_POSITIONS, TABLE_ROOMS } from '@/data/tables';
 import { TableState } from '@/types';
 import ZoomControls from './ZoomControls';
-import TableDetailDrawer from './TableDetailDrawer';
 
 // Status color for the subtle tint overlay
 const STATUS_FILL: Record<string, string> = {
@@ -20,21 +19,17 @@ interface FloorPlanProps {
   readonly highlightFilter: string | null;
   readonly roomFilter: string | null;
   readonly recommendedId?: number | null;
-  readonly onClearRecommended?: () => void;
+  readonly onSelectTable: (t: TableState) => void;
 }
 
-export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, onClearRecommended }: FloorPlanProps) {
+export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, onSelectTable }: FloorPlanProps) {
   const { tables } = useTableContext();
-  const [scale, setScale] = useState(1);
-  const [manualSelected, setManualSelected] = useState<TableState | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [compassHeading, setCompassHeading] = useState(0);
-
-  // Merge: recommended table (from button) takes priority over manual tap
-  const recommendedTable = recommendedId == null
-    ? null
-    : (tables.find((tbl) => tbl.id === recommendedId) ?? null);
-  const selectedTable = recommendedTable ?? manualSelected;
+  const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
+  const isDragging = useRef(false);
 
   // Device orientation — auto-rotate compass
   useEffect(() => {
@@ -52,9 +47,89 @@ export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, 
     return () => globalThis.removeEventListener('deviceorientation', handleOrientation, true);
   }, []);
 
-  const zoomIn = useCallback(() => setScale((s) => Math.min(s + 0.25, 2.5)), []);
-  const zoomOut = useCallback(() => setScale((s) => Math.max(s - 0.25, 0.5)), []);
-  const resetZoom = useCallback(() => setScale(1), []);
+  // ViewBox-based zoom + pan
+  const SVG_W = 609, SVG_H = 483;
+  const vw = SVG_W / zoom;
+  const vh = SVG_H / zoom;
+
+  // Clamp pan so map doesn't go out of bounds
+  const clampPan = useCallback((x: number, y: number, z: number) => {
+    const vwz = SVG_W / z;
+    const vhz = SVG_H / z;
+    const maxX = (SVG_W - vwz) / 2;
+    const maxY = (SVG_H - vhz) / 2;
+    return {
+      x: Math.max(-maxX, Math.min(maxX, x)),
+      y: Math.max(-maxY, Math.min(maxY, y)),
+    };
+  }, []);
+
+  const vx = (SVG_W - vw) / 2 + pan.x;
+  const vy = (SVG_H - vh) / 2 + pan.y;
+
+  const zoomIn    = useCallback(() => setZoom((z) => Math.min(+(z + 0.25).toFixed(2), 3)), []);
+  const zoomOut   = useCallback(() => setZoom((z) => { const nz = Math.max(+(z - 0.25).toFixed(2), 0.5); setPan((p) => clampPan(p.x, p.y, nz)); return nz; }), [clampPan]);
+  const resetZoom = useCallback(() => { setZoom(1); setPan({ x: 0, y: 0 }); }, []);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    setZoom((z) => {
+      const delta = e.deltaY < 0 ? 0.15 : -0.15;
+      return Math.min(3, Math.max(0.5, +(z + delta).toFixed(2)));
+    });
+  }, []);
+
+  // Mouse pan handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (zoom <= 1) return;
+    isDragging.current = false;
+    dragRef.current = { startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y };
+  }, [zoom, pan]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isDragging.current = true;
+    // Convert pixel delta to SVG units (element width maps to vw)
+    const svgEl = e.currentTarget as HTMLElement;
+    const scaleX = vw / svgEl.clientWidth;
+    const scaleY = vh / (svgEl.clientHeight || svgEl.clientWidth * (SVG_H / SVG_W));
+    const nx = dragRef.current.panX - dx * scaleX;
+    const ny = dragRef.current.panY - dy * scaleY;
+    setPan(clampPan(nx, ny, zoom));
+  }, [vw, vh, zoom, clampPan]);
+
+  const handleMouseUp = useCallback(() => {
+    dragRef.current = null;
+  }, []);
+
+  // Touch pan handlers
+  const touchRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (zoom <= 1 || e.touches.length !== 1) return;
+    const t = e.touches[0];
+    touchRef.current = { x: t.clientX, y: t.clientY, panX: pan.x, panY: pan.y };
+  }, [zoom, pan]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!touchRef.current || e.touches.length !== 1) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    const dx = t.clientX - touchRef.current.x;
+    const dy = t.clientY - touchRef.current.y;
+    const svgEl = e.currentTarget as HTMLElement;
+    const scaleX = vw / svgEl.clientWidth;
+    const scaleY = vh / (svgEl.clientHeight || svgEl.clientWidth * (SVG_H / SVG_W));
+    const nx = touchRef.current.panX - dx * scaleX;
+    const ny = touchRef.current.panY - dy * scaleY;
+    setPan(clampPan(nx, ny, zoom));
+  }, [vw, vh, zoom, clampPan]);
+
+  const handleTouchEnd = useCallback(() => {
+    touchRef.current = null;
+  }, []);
 
   const isHighlighted = (t: TableState) => {
     if (!highlightFilter) return true;
@@ -69,21 +144,32 @@ export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, 
     return t.facilities.some((f) => f.label.includes(highlightFilter));
   };
 
+  let cursorStyle = 'default';
+  if (zoom > 1) cursorStyle = dragRef.current ? 'grabbing' : 'grab';
+
   return (
-    <>
-      <div className="relative overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+    <div
+      className="relative overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm"
+      role="application"
+      aria-label="Floor plan map, draggable when zoomed"
+      style={{ cursor: cursorStyle }}
+      onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
         <ZoomControls onZoomIn={zoomIn} onZoomOut={zoomOut} onReset={resetZoom} />
 
-        <div className="overflow-auto" style={{ maxHeight: '62vh' }}>
-          <svg
-            viewBox="0 0 609 483"
-            className="w-full"
-            style={{
-              transform: `scale(${scale})`,
-              transformOrigin: 'top left',
-              minWidth: `${609 * scale}px`,
-            }}
-          >
+        <svg
+          viewBox={`${vx} ${vy} ${vw} ${vh}`}
+          className="w-full"
+          style={{ display: 'block', touchAction: 'none' }}
+        >
             <image href="/Frame 112.svg" x="0" y="0" width="609" height="483" />
 
             {tables.map((table) => {
@@ -103,8 +189,8 @@ export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, 
                 <g
                   key={table.id}
                   opacity={dimmed ? 0.3 : 1}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setManualSelected(table)}
+                  style={{ cursor: zoom > 1 ? 'inherit' : 'pointer' }}
+                  onClick={() => { if (!isDragging.current) onSelectTable(table); }}
                   onMouseEnter={() => setHoveredId(table.id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
@@ -185,14 +271,7 @@ export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, 
               {/* Fixed N label — always top */}
               <text x={0} y={-20} textAnchor="middle" fontSize={8} fontWeight="700" fill="#4B135F" fontFamily="system-ui">N</text>
             </g>
-          </svg>
-        </div>
-      </div>
-
-      <TableDetailDrawer
-        table={selectedTable}
-        onClose={() => { setManualSelected(null); onClearRecommended?.(); }}
-      />
-    </>
+        </svg>
+    </div>
   );
 }
