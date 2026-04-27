@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import BookingForm from '@/components/booking/BookingForm';
 import type { BookingFormValues } from '@/types/booking';
@@ -19,7 +19,17 @@ import {
 } from '@/data/tables';
 
 export default function CreateBookingPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-neutral-400">Memuat form...</div>}>
+      <CreateBookingContent />
+    </Suspense>
+  );
+}
+
+function CreateBookingContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialBlockCode = searchParams.get('blockCode') ?? undefined;
   const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -83,7 +93,7 @@ export default function CreateBookingPage() {
         paymentProofName: values.paymentProof?.name || '',
       });
 
-      window.sessionStorage.setItem('booking-success-toast', 'Booking berhasil disimpan.');
+      globalThis.sessionStorage.setItem('booking-success-toast', 'Booking berhasil disimpan.');
       router.push('/booking');
     } catch (error) {
       console.error('SAVE RESERVATION ERROR:', error);
@@ -123,7 +133,7 @@ export default function CreateBookingPage() {
         </div>
       )}
 
-      <BookingForm onSubmit={handleCreateBooking} />
+      <BookingForm onSubmit={handleCreateBooking} initialBlockCode={initialBlockCode} />
     </section>
   );
 }

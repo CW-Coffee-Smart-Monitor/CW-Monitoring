@@ -15,6 +15,8 @@ export default function AppShell({ children }: { readonly children: React.ReactN
   const isAuthRoute = pathname?.startsWith('/auth');
   const isLandingRoute = pathname === '/landing';
 
+  const isMapRoute = pathname === '/map';
+
   // Landing page gets full-width layout without app chrome
   if (isLandingRoute) {
     return <>{children}</>;
@@ -24,7 +26,7 @@ export default function AppShell({ children }: { readonly children: React.ReactN
     <TableProvider>
       <SimulatorRunner />
       {!isAuthRoute && <Header />}
-      <main className="mx-auto w-full max-w-md flex-1 px-4 pb-4 pt-4">
+      <main className={`mx-auto w-full flex-1 pb-4 pt-4 ${isMapRoute ? 'bg-neutral-50 px-4 lg:px-6' : 'max-w-md px-4'}`}>
         {children}
       </main>
       {!isAuthRoute && <AppFooter />}
