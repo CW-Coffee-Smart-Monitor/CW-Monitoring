@@ -50,29 +50,32 @@ export default function StaffLoginPage() {
       {/* ── LEFT PANEL ── */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden bg-[#3b0f50] flex-col">
 
-        {/* Gradient overlay behind image */}
+        {/* Purple gradient base */}
         <div className="absolute inset-0 bg-linear-to-br from-[#4B135F] via-[#6c1f82] to-[#2a0840]" />
 
-        {/* Dashboard screenshot — taruh file di public/images/dashboard-preview.png */}
-        <div className="absolute inset-0 flex items-end justify-center pb-32 px-8 pt-12">
-          <div className="relative w-full max-w-xl">
-            {/* Outer glow */}
-            <div className="absolute -inset-3 rounded-2xl bg-white/10 blur-2xl" />
-            {/* Screenshot card */}
-            <div className="relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl">
-              <Image
-                src="/images/dashboard-preview.png"
-                alt="CW Monitor Dashboard Preview"
-                width={960}
-                height={600}
-                className="w-full h-auto object-cover object-top"
-                priority
-              />
-            </div>
-          </div>
+        {/* Logo — pojok kiri atas */}
+        <div className="relative z-10 p-10 flex items-center gap-3">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/CWClub.png" alt="CW Coffee" width={36} height={36} className="object-contain" />
+          <span className="text-white font-bold text-base tracking-widest uppercase">CW Coffee</span>
         </div>
 
-        {/* Bottom tagline */}
+        {/* Dashboard screenshot — pojok kanan bawah, overflow seperti Directus */}
+        <Image
+          src="/images/dashboard.png"
+          alt="CW Monitor Dashboard Preview"
+          width={1100}
+          height={800}
+          className="absolute bottom-0 right-[-50%] w-[110%] h-auto object-cover object-left-top rounded-tl-2xl shadow-2xl opacity-90"
+          priority
+        />
+
+        {/* Gradient kiri agar teks terbaca, bukan gelap seluruh panel */}
+        <div className="absolute inset-0 bg-linear-to-r from-[#3b0f50]/90 via-[#3b0f50]/40 to-transparent" />
+        {/* Gradient bawah tipis */}
+        <div className="absolute bottom-0 left-0 right-0 h-40 bg-linear-to-t from-[#2a0840]/80 to-transparent" />
+
+        {/* Tagline — pojok kiri bawah */}
         <div className="relative mt-auto p-10 z-10">
           <p className="text-white text-2xl font-extrabold leading-snug max-w-xs">
             Monitoring coworking space<br />secara real-time.
