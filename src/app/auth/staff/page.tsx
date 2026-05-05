@@ -66,7 +66,7 @@ export default function StaffLoginPage() {
           alt="CW Monitor Dashboard Preview"
           width={1100}
           height={800}
-          className="absolute bottom-0 right-[-50%] w-[115%] h-auto object-cover object-left-top rounded-tl-2xl shadow-2xl opacity-90"
+          className="absolute bottom-0 right-[-30%] w-[115%] h-auto object-cover object-left-top rounded-tl-2xl shadow-2xl opacity-90"
           priority
         />
 
