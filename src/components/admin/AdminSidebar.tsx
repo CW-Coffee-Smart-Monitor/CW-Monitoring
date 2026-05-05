@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
 import {
   LayoutDashboard,
   CreditCard,
@@ -22,6 +23,14 @@ const NAV_ITEMS = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/auth/staff');
+  };
 
   return (
     <aside className="w-64 h-screen sticky top-0 bg-[#ECEEF6] flex flex-col shrink-0 border-r border-[#DDE0EE] overflow-hidden">
@@ -72,9 +81,13 @@ export default function AdminSidebar() {
           <Settings className="w-4 h-4 shrink-0 text-[#7B6B8D]" />
           <span>Settings</span>
         </Link>
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#5a4d6b] hover:bg-white/60 hover:text-[#4B135F] transition-all">
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#5a4d6b] hover:bg-red-50 hover:text-red-600 transition-all disabled:opacity-50"
+        >
           <LogOut className="w-4 h-4 shrink-0 text-[#7B6B8D]" />
-          <span>Logout</span>
+          <span>{loggingOut ? 'Keluar...' : 'Logout'}</span>
         </button>
       </div>
     </aside>

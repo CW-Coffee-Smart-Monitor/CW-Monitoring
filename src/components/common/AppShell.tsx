@@ -18,8 +18,8 @@ export default function AppShell({ children }: { readonly children: React.ReactN
   const isMapRoute = pathname === '/map';
   const isAdminRoute = pathname?.startsWith('/admin');
 
-  // Landing and admin pages get full-width layout without app chrome
-  if (isLandingRoute || isAdminRoute) {
+  // Landing, admin, and auth pages get full-width layout without app chrome
+  if (isLandingRoute || isAdminRoute || isAuthRoute) {
     return <>{children}</>;
   }
 
