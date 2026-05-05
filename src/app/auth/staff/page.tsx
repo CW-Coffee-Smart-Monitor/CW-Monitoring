@@ -62,7 +62,7 @@ export default function StaffLoginPage() {
         {/* Dashboard screenshot — pojok kanan bawah, overflow seperti Directus */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/images/dashboard.png"
+          src="/images/Dashboard.png"
           alt="CW Monitor Dashboard Preview"
           style={{ position: 'absolute', bottom: 0, right: '-8%', width: '115%', height: 'auto', borderTopLeftRadius: '1rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', opacity: 0.9, objectFit: 'cover', objectPosition: 'left top' }}
         />
