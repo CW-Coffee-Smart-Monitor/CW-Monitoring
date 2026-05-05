@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Mail, Lock, Eye, EyeOff, LayoutDashboard } from 'lucide-react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -61,13 +60,11 @@ export default function StaffLoginPage() {
         </div>
 
         {/* Dashboard screenshot — pojok kanan bawah, overflow seperti Directus */}
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src="/images/dashboard.png"
           alt="CW Monitor Dashboard Preview"
-          width={1100}
-          height={800}
-          className="absolute bottom-0 right-[-8%] w-[115%] h-auto object-cover object-left-top rounded-tl-2xl shadow-2xl opacity-90"
-          priority
+          style={{ position: 'absolute', bottom: 0, right: '-8%', width: '115%', height: 'auto', borderTopLeftRadius: '1rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', opacity: 0.9, objectFit: 'cover', objectPosition: 'left top' }}
         />
 
         {/* Gradient kiri agar teks terbaca, bukan gelap seluruh panel */}
