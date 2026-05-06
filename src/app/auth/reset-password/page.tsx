@@ -45,6 +45,7 @@ function ResetPasswordForm() {
       setError('Kata sandi minimal 6 karakter.'); return;
     }
     setError('');
+    if (!oobCode) { setError('Link tidak valid.'); return; }
     setIsLoading(true);
     try {
       await confirmPasswordReset(auth, oobCode, password);
