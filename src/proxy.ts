@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Routes that don't require authentication
-const PUBLIC_PATHS = ['/auth/login', '/auth/register', '/auth/staff', '/landing', '/'];
+const PUBLIC_PATHS = ['/auth/login', '/auth/register', '/auth/staff', '/auth/forgot-password', '/auth/reset-password', '/landing', '/'];
 
 // Static file extensions that should always pass through
 const STATIC_EXT = /\.(jpg|jpeg|png|gif|svg|ico|webp|woff|woff2|ttf|otf|css|js|map)$/i;

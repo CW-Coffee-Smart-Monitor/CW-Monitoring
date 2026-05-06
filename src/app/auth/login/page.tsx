@@ -178,29 +178,29 @@ export default function LoginPage() {
       ══════════════════════════════════════ */}
       <div
         className="w-full lg:w-md shrink-0 flex flex-col justify-center relative"
-        style={{ background: '#111114' }}
+        style={{ background: '#ffffff' }}
       >
         {/* Mobile logo (only visible < lg) */}
         <div className="lg:hidden absolute top-7 left-8 flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/CWClub.png" alt="CW Coffee" width={28} height={28} className="object-contain" />
-          <span className="text-white font-bold text-sm tracking-widest uppercase">CW Coffee</span>
+          <span className="font-bold text-sm tracking-widest uppercase" style={{ color: '#1a1a2e' }}>CW Coffee</span>
         </div>
 
         <div className="px-10 py-16 lg:py-0 w-full">
 
           {/* ── Heading ── */}
-          <h2 className="text-3xl font-black text-white tracking-tight mb-1">
+          <h2 className="text-3xl font-black tracking-tight mb-1" style={{ color: '#1a1a2e' }}>
             {tab === 'masuk' ? 'Masuk ke CW Coffee' : 'Buat akun baru'}
           </h2>
-          <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-sm mb-8" style={{ color: '#6b7280' }}>
             {tab === 'masuk' ? 'Masukkan detail akun Anda di bawah ini.' : 'Isi data berikut untuk mulai monitoring.'}
           </p>
 
           {/* Error / success banners */}
           {error && (
-            <div className="mb-6 flex items-start gap-2.5 text-sm text-red-300 px-4 py-3 rounded-xl"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+            <div className="mb-6 flex items-start gap-2.5 text-sm text-red-600 px-4 py-3 rounded-xl"
+              style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)' }}>
               <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
               </svg>
@@ -208,8 +208,8 @@ export default function LoginPage() {
             </div>
           )}
           {success && (
-            <div className="mb-6 flex items-start gap-2.5 text-sm text-emerald-300 px-4 py-3 rounded-xl"
-              style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.18)' }}>
+            <div className="mb-6 flex items-start gap-2.5 text-sm text-emerald-700 px-4 py-3 rounded-xl"
+              style={{ background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)' }}>
               <svg className="w-4 h-4 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
@@ -222,30 +222,30 @@ export default function LoginPage() {
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Email */}
               <div>
-                <label htmlFor="login-email" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                <label htmlFor="login-email" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: '#6b7280' }}>
                   Alamat Email
                 </label>
                 <div className="flex items-center gap-3 pb-3"
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.14)' }}>
+                  style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <input id="login-email" name="email" type="email" placeholder="nama@email.com" required
-                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/20"
-                    style={{ caretColor: '#7c3aed' }} />
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-300"
+                    style={{ caretColor: '#7c3aed', color: '#1a1a2e' }} />
                 </div>
               </div>
 
               {/* Password */}
               <div>
-                <label htmlFor="login-password" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: 'rgba(255,255,255,0.45)' }}>
+                <label htmlFor="login-password" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: '#6b7280' }}>
                   Kata Sandi
                 </label>
                 <div className="flex items-center gap-3 pb-3"
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.14)' }}>
+                  style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <input id="login-password" name="password" type={showPassword ? 'text' : 'password'} placeholder="Minimal 6 karakter" required
-                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/20"
-                    style={{ caretColor: '#7c3aed' }} />
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-300"
+                    style={{ caretColor: '#7c3aed', color: '#1a1a2e' }} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="shrink-0 transition-colors"
-                    style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    style={{ color: '#9ca3af' }}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -265,10 +265,10 @@ export default function LoginPage() {
                 ) : 'Masuk'}
               </button>
 
-              <p className="text-center text-sm" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <p className="text-center text-sm">
                 <Link href="/auth/forgot-password"
                   className="transition-colors"
-                  style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  style={{ color: '#7c3aed' }}>
                   Lupa kata sandi?
                 </Link>
               </p>
@@ -279,39 +279,39 @@ export default function LoginPage() {
           {tab === 'daftar' && (
             <form onSubmit={handleRegister} className="space-y-6">
               <div>
-                <label htmlFor="reg-fullname" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: 'rgba(255,255,255,0.45)' }}>Nama Lengkap</label>
-                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.14)' }}>
+                <label htmlFor="reg-fullname" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: '#6b7280' }}>Nama Lengkap</label>
+                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <input id="reg-fullname" name="fullname" type="text" placeholder="Nama lengkap kamu" required
-                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/20"
-                    style={{ caretColor: '#7c3aed' }} />
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-300"
+                    style={{ caretColor: '#7c3aed', color: '#1a1a2e' }} />
                 </div>
               </div>
               <div>
-                <label htmlFor="reg-email" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: 'rgba(255,255,255,0.45)' }}>Alamat Email</label>
-                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.14)' }}>
+                <label htmlFor="reg-email" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: '#6b7280' }}>Alamat Email</label>
+                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <input id="reg-email" name="email" type="email" placeholder="nama@email.com" required
-                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/20"
-                    style={{ caretColor: '#7c3aed' }} />
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-300"
+                    style={{ caretColor: '#7c3aed', color: '#1a1a2e' }} />
                 </div>
               </div>
               <div>
-                <label htmlFor="reg-phone" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: 'rgba(255,255,255,0.45)' }}>
-                  Nomor HP <span style={{ fontWeight: 400, color: 'rgba(255,255,255,0.25)' }}>(opsional)</span>
+                <label htmlFor="reg-phone" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: '#6b7280' }}>
+                  Nomor HP <span style={{ fontWeight: 400, color: '#9ca3af' }}>(opsional)</span>
                 </label>
-                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.14)' }}>
+                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <input id="reg-phone" name="phone" type="tel" placeholder="08xx-xxxx-xxxx"
-                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/20"
-                    style={{ caretColor: '#7c3aed' }} />
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-300"
+                    style={{ caretColor: '#7c3aed', color: '#1a1a2e' }} />
                 </div>
               </div>
               <div>
-                <label htmlFor="reg-password" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: 'rgba(255,255,255,0.45)' }}>Kata Sandi</label>
-                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.14)' }}>
+                <label htmlFor="reg-password" className="block text-xs font-semibold mb-2 tracking-wide" style={{ color: '#6b7280' }}>Kata Sandi</label>
+                <div className="flex items-center gap-3 pb-3" style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <input id="reg-password" name="password" type={showPassword ? 'text' : 'password'} placeholder="Minimal 6 karakter" required
-                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/20"
-                    style={{ caretColor: '#7c3aed' }} />
+                    className="w-full bg-transparent text-sm outline-none placeholder:text-gray-300"
+                    style={{ caretColor: '#7c3aed', color: '#1a1a2e' }} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="shrink-0 transition-colors" style={{ color: 'rgba(255,255,255,0.3)' }}>
+                    className="shrink-0 transition-colors" style={{ color: '#9ca3af' }}>
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
@@ -334,14 +334,14 @@ export default function LoginPage() {
 
           {/* ── Bottom: switch tab ── */}
           <div className="flex items-center justify-between mt-8 pt-6"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-            <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            style={{ borderTop: '1px solid #f3f4f6' }}>
+            <p className="text-sm" style={{ color: '#9ca3af' }}>
               {tab === 'masuk' ? 'Belum punya akun?' : 'Sudah punya akun?'}
             </p>
             <button
               onClick={() => { setTab(tab === 'masuk' ? 'daftar' : 'masuk'); setError(''); setSuccess(''); }}
               className="text-sm font-bold px-4 py-2 rounded-lg transition-all"
-              style={{ background: 'rgba(255,255,255,0.06)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}>
+              style={{ background: '#f3f4f6', color: '#1a1a2e', border: '1px solid #e5e7eb' }}>
               {tab === 'masuk' ? 'Buat Akun' : 'Masuk'}
             </button>
           </div>
