@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "title": "Pengaturan",
+    "rfid": {
+      "title": "RFID Card",
+      "id": "ID Kartu",
+      "connect": "Hubungkan Kartu Baru"
+    },
+    "preferences": {
+      "title": "Preferensi",
+      "darkMode": "Dark Mode",
+      "language": "Bahasa",
+      "mapStatus": "Status di Peta"
+    },
+    "logout": "Keluar"
+  }
+}
