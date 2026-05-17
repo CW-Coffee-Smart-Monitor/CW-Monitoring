@@ -1,14 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  ArrowLeft,
-  Settings,
-  Bell,
-  Coffee,
-  HelpCircle,
-} from 'lucide-react';
-
+import { ArrowLeft, Settings, Bell, Coffee, HelpCircle } from 'lucide-react';
 import ProfileCard from "@/components/profile/ProfileCard";
 import ModeCard from "@/components/profile/ModeCard";
 import MenuCard from "@/components/profile/MenuCard";
@@ -17,7 +10,7 @@ export default function ProfilePage() {
   const router = useRouter();
 
   return (
-    <div className="space-y-4 p-4 bg-white min-h-screen">
+    <div className="max-w-2xl mx-auto space-y-4 py-2">
 
       {/* Header */}
       <div className="flex items-center gap-3">
@@ -27,15 +20,13 @@ export default function ProfilePage() {
         >
           <ArrowLeft className="h-4 w-4 text-neutral-700" strokeWidth={2.5} />
         </button>
-
         <h1 className="text-lg font-semibold text-neutral-800">
           Profil Saya
         </h1>
       </div>
 
       {/* Profile */}
-      <ProfileCard
-      />
+      <ProfileCard />
 
       {/* Mode */}
       <ModeCard
