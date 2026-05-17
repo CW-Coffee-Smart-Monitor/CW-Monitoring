@@ -90,10 +90,10 @@ export default function Header() {
           <div className="flex items-center gap-2">
 
             {/* Notification bell */}
-            <button className="relative flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white">
+            <Link href="/profile/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white">
               <Bell className="h-4.5 w-4.5" />
               <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500" />
-            </button>
+            </Link>
 
             {/* Divider */}
             <div className="mx-1 h-5 w-px bg-white/20" />

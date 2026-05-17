@@ -44,12 +44,6 @@ export default function ProfilePage() {
             href: "/profile/settings",
           },
           {
-            title: "Notifikasi IoT",
-            subtitle: "Sensor suhu, keramaian, & pesanan",
-            icon: <Bell className="h-5 w-5" strokeWidth={2.5} />,
-            href: "/profile/notifications",
-          },
-          {
             title: "Riwayat Booking",
             subtitle: "Cek riwayat kopi kamu",
             icon: <Coffee className="h-5 w-5" strokeWidth={2.5} />,
