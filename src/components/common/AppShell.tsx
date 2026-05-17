@@ -1,36 +1,31 @@
-'use client';
+"use client";
 
-/**
- * AppShell — Client wrapper providing global context, header, navbar, and simulator.
- */
-
-import { TableProvider } from '@/context/TableContext';
-import { usePathname } from 'next/navigation';
-import Header from '@/components/common/Header';
-import AppFooter from '@/components/common/AppFooter';
-import SimulatorRunner from '@/components/common/SimulatorRunner';
+import { TableProvider } from "@/context/TableContext";
+import { usePathname } from "next/navigation";
+import Header from "@/components/common/Header";
+import AppFooter from "@/components/common/AppFooter";
+import SimulatorRunner from "@/components/common/SimulatorRunner";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 export default function AppShell({ children }: { readonly children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthRoute = pathname?.startsWith('/auth');
-  const isLandingRoute = pathname === '/landing';
+  const isAuthRoute = pathname?.startsWith("/auth");
+  const isLandingRoute = pathname === "/landing";
+  const isMapRoute = pathname === "/map";
+  const isAdminRoute = pathname?.startsWith("/admin");
 
-  const isMapRoute = pathname === '/map';
-  const isAdminRoute = pathname?.startsWith('/admin');
-
-  // Landing, admin, and auth pages get full-width layout without app chrome
   if (isLandingRoute || isAdminRoute || isAuthRoute) {
     return <>{children}</>;
   }
 
   return (
     <TableProvider>
-      <SimulatorRunner />
-      {!isAuthRoute && <Header />}
-      <main className={`mx-auto w-full flex-1 pb-4 pt-4 ${isMapRoute ? 'bg-neutral-50 px-4 lg:px-6' : 'max-w-md px-4'}`}>
-        {children}
-      </main>
-      {!isAuthRoute && <AppFooter />}
+      <LanguageProvider>
+        <SimulatorRunner />
+        {!isAuthRoute && <Header />}
+        <main className={`w-full flex-1 pb-4 pt-4 ${isMapRoute ? "bg-neutral-50 px-4 lg:px-6" : "px-4"}`}>{children}</main>
+        {!isAuthRoute && <AppFooter />}
+      </LanguageProvider>
     </TableProvider>
   );
 }

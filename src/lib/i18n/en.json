@@ -1,0 +1,17 @@
+{
+  "settings": {
+    "title": "Settings",
+    "rfid": {
+      "title": "RFID Card",
+      "id": "Card ID",
+      "connect": "Connect New Card"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "darkMode": "Dark Mode",
+      "language": "Language",
+      "mapStatus": "Map Status"
+    },
+    "logout": "Logout"
+  }
+}
