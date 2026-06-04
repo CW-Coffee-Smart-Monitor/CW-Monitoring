@@ -22,3 +22,19 @@ export interface BookingItem {
   status: BookingStatus;
   createdAt: string;
 }
+
+export interface Reservation {
+  id: string;
+  date: string;
+  arrivalTime: string;
+  durationMinutes: number;
+  bookingId?: string;
+  tableId?: number;
+  status: ReservationStatus;
+  userId: string;
+  createdAt: string;
+  user?: {
+    name?: string;
+  };
+  paymentProof?: string;
+}

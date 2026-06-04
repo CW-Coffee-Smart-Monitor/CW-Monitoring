@@ -32,23 +32,23 @@ const PENDING_APPROVALS = [
 ];
 
 const SESSION_HISTORY = [
-  { cardId: 'RFC-8821', tableId: 'T-12 (Atrium)',      start: '08:15 AM', end: '11:30 AM', duration: '3h 15m', heavy: false },
-  { cardId: 'RFC-4490', tableId: 'T-04 (Window)',      start: '09:00 AM', end: '02:45 PM', duration: '5h 45m', heavy: true  },
-  { cardId: 'RFC-1102', tableId: 'T-08 (Communal)',    start: '10:20 AM', end: '12:00 PM', duration: '1h 40m', heavy: false },
-  { cardId: 'RFC-9934', tableId: 'T-18 (Quiet Zone)',  start: '07:30 AM', end: '12:45 PM', duration: '5h 15m', heavy: true  },
+  { cardId: 'RFC-8821', tableId: 'T-12 (Atrium)', start: '08:15 AM', end: '11:30 AM', duration: '3h 15m', heavy: false },
+  { cardId: 'RFC-4490', tableId: 'T-04 (Window)', start: '09:00 AM', end: '02:45 PM', duration: '5h 45m', heavy: true },
+  { cardId: 'RFC-1102', tableId: 'T-08 (Communal)', start: '10:20 AM', end: '12:00 PM', duration: '1h 40m', heavy: false },
+  { cardId: 'RFC-9934', tableId: 'T-18 (Quiet Zone)', start: '07:30 AM', end: '12:45 PM', duration: '5h 15m', heavy: true },
 ];
 
 const BOOKING_HISTORY: { initials: string; name: string; dateTime: string; resource: string; status: 'COMPLETED' | 'NO SHOW' }[] = [
-  { initials: 'JD', name: 'Jane Doe',     dateTime: 'Oct 24, 09:00 AM – 11:00 AM', resource: 'Meeting Room A', status: 'COMPLETED' },
-  { initials: 'RB', name: 'Robert Brown', dateTime: 'Oct 23, 02:00 PM – 05:00 PM', resource: 'Desk T-09',      status: 'NO SHOW'   },
-  { initials: 'SL', name: 'Sarah Lee',    dateTime: 'Oct 23, 10:00 AM – 12:00 PM', resource: 'Lounge Space',   status: 'COMPLETED' },
+  { initials: 'JD', name: 'Jane Doe', dateTime: 'Oct 24, 09:00 AM – 11:00 AM', resource: 'Meeting Room A', status: 'COMPLETED' },
+  { initials: 'RB', name: 'Robert Brown', dateTime: 'Oct 23, 02:00 PM – 05:00 PM', resource: 'Desk T-09', status: 'NO SHOW' },
+  { initials: 'SL', name: 'Sarah Lee', dateTime: 'Oct 23, 10:00 AM – 12:00 PM', resource: 'Lounge Space', status: 'COMPLETED' },
 ];
 
 const ESP_DEVICES = [
-  { id: 'ESP-T12', status: 'ONLINE',    downtime: '0m',  reboots: 1 },
-  { id: 'ESP-T08', status: 'ONLINE',    downtime: '5m',  reboots: 2 },
-  { id: 'ESP-T18', status: 'DEGRADED',  downtime: '14m', reboots: 1 },
-  { id: 'ESP-T18', status: 'DEGRADED',  downtime: '14m', reboots: 1 },
+  { id: 'ESP-T12', status: 'ONLINE', downtime: '0m', reboots: 1 },
+  { id: 'ESP-T08', status: 'ONLINE', downtime: '5m', reboots: 2 },
+  { id: 'ESP-T18', status: 'DEGRADED', downtime: '14m', reboots: 1 },
+  { id: 'ESP-T18', status: 'DEGRADED', downtime: '14m', reboots: 1 },
 ];
 
 export default function HistoryPage() {
