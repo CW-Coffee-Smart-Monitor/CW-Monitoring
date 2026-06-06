@@ -303,7 +303,7 @@ export default function BookingForm({ onSubmit, initialBlockCode }: BookingFormP
           </p>
         </div>
 
-        <div>
+        {/* <div>
           <label className="mb-2 block text-sm font-medium text-neutral-700">
             Bukti Pembayaran DP <span className="text-red-500">*</span>
           </label>
@@ -348,7 +348,7 @@ export default function BookingForm({ onSubmit, initialBlockCode }: BookingFormP
               </p>
             </div>
           )}
-        </div>
+        </div> */}
 
         {formError && (
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
