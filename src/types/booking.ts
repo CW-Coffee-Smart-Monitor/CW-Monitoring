@@ -1,4 +1,4 @@
-export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed' | 'rejected';
 
 export interface BookingFormValues {
   branch: string;
@@ -21,4 +21,20 @@ export interface BookingItem {
   paymentProof: File | null;
   status: BookingStatus;
   createdAt: string;
+}
+
+export interface Reservation {
+  id: string;
+  date: string;
+  arrivalTime: string;
+  durationMinutes: number;
+  bookingId?: string;
+  tableId?: number;
+  status: ReservationStatus;
+  userId: string;
+  createdAt: string;
+  user?: {
+    name?: string;
+  };
+  paymentProof?: string;
 }

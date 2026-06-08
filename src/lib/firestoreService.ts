@@ -10,6 +10,7 @@ import {
   setDoc,
   addDoc,
   getDocs,
+  updateDoc,
   serverTimestamp,
   query,
   where,
@@ -287,4 +288,94 @@ export async function getBlockAvailabilityForDateTime(params: {
   }
 
   return availability;
+}
+
+export async function assignRFIDToReservation(
+  reservationId: string,
+  rfidId: string,
+  role: 'customer' | 'staff' | 'karyawan',
+): Promise<void> {
+  await updateDoc(
+    doc(db, RESERVATIONS_COLLECTION, reservationId),
+    {
+      rfidId,
+      role,
+      rfidAssignedAt: new Date().toISOString(),
+      checkInStatus: 'pending',
+    }
+  );
+}
+
+export async function findDeviceByTableId(
+  tableId: number,
+): Promise<{
+  id: string;
+  rfidId: string;
+  tableId: number
+} | null> {
+  const q = query(
+    collection(db, 'devices'),
+    where('tableId', '==', tableId)
+  );
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const docSnap = snapshot.docs[0];
+
+  return {
+    id: docSnap.id,
+    ...(docSnap.data() as {
+      rfidId: string;
+      tableId: number;
+    }),
+  };
+}
+
+//  ─── Part Admin ─────────────────────────────────────────
+
+export function subscribePendingReservations(
+  callback: (data: Reservation[]) => void
+) {
+  const q = query(
+    collection(db, RESERVATIONS_COLLECTION),
+    where('status', '==', 'pending')
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const reservations = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Reservation[];
+
+    callback(reservations);
+  });
+}
+
+export async function acceptReservation(
+  reservationId: string,
+  userId: string,
+) {
+  await updateDoc(
+    doc(db, RESERVATIONS_COLLECTION, reservationId),
+    {
+      status: 'confirmed',
+      approvedAt: new Date().toISOString(),
+      approvedBy: userId,
+    }
+  );
+}
+
+export async function rejectReservation(
+  reservationId: string,
+) {
+  await updateDoc(
+    doc(db, RESERVATIONS_COLLECTION, reservationId),
+    {
+      status: 'rejected',
+      rejectedAt: new Date().toISOString(),
+    }
+  );
 }
