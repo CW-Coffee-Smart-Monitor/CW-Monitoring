@@ -1,51 +1,16 @@
 'use client';
 import Link from 'next/link';
 import { BarChart2, Calendar, SlidersHorizontal, Table2, Download } from 'lucide-react';
-import { auth } from '@/lib/firebase';
 import { Reservation } from '@/types/reservation';
 import  { subscribeToAllReservations } from '@/lib/firestoreService';
 import { useEffect, useState } from 'react';
 
-/* ── Mock data ─────────────────────────────────────────────── */
-
-const pendingApprovals = [
-  {
-    initials: 'ER',
-    name: 'Elena Rodriguez',
-    tier: 'PREMIUM MEMBER',
-    resource: 'Meeting Room B',
-    time: 'Tomorrow, 2:00 PM – 4:00 PM',
-    avatarBg: 'bg-neutral-700',
-  },
-  {
-    initials: 'JS',
-    name: 'Julian Smith',
-    tier: 'STANDARD MEMBER',
-    resource: 'Desk T-15 (Window)',
-    time: 'Wed, 09:00 AM – 5:00 PM',
-    avatarBg: 'bg-purple-500',
-  },
-  {
-    initials: 'MK',
-    name: 'Marcus King',
-    tier: 'CORPORATE ACCOUNT',
-    resource: 'Lounge Suite 1',
-    time: 'Today, 5:00 PM – 7:00 PM',
-    avatarBg: 'bg-amber-700',
-  },
-];
 
 const SESSION_HISTORY = [
   { cardId: 'RFC-8821', tableId: 'T-12 (Atrium)', start: '08:15 AM', end: '11:30 AM', duration: '3h 15m', heavy: false },
   { cardId: 'RFC-4490', tableId: 'T-04 (Window)', start: '09:00 AM', end: '02:45 PM', duration: '5h 45m', heavy: true },
   { cardId: 'RFC-1102', tableId: 'T-08 (Communal)', start: '10:20 AM', end: '12:00 PM', duration: '1h 40m', heavy: false },
   { cardId: 'RFC-9934', tableId: 'T-18 (Quiet Zone)', start: '07:30 AM', end: '12:45 PM', duration: '5h 15m', heavy: true },
-];
-
-const BOOKING_HISTORY: { initials: string; name: string; dateTime: string; resource: string; status: 'COMPLETED' | 'NO SHOW' }[] = [
-  { initials: 'JD', name: 'Jane Doe', dateTime: 'Oct 24, 09:00 AM – 11:00 AM', resource: 'Meeting Room A', status: 'COMPLETED' },
-  { initials: 'RB', name: 'Robert Brown', dateTime: 'Oct 23, 02:00 PM – 05:00 PM', resource: 'Desk T-09', status: 'NO SHOW' },
-  { initials: 'SL', name: 'Sarah Lee', dateTime: 'Oct 23, 10:00 AM – 12:00 PM', resource: 'Lounge Space', status: 'COMPLETED' },
 ];
 
 const ESP_DEVICES = [
@@ -72,6 +37,16 @@ export default function HistoryPage() {
       new Date(a.createdAt).getTime()
   ).slice(0, 3);
 
+  const bookingHistory = reservations.filter (
+    (reservation) =>
+      reservation.status === 'confirmed' || 
+      reservation.status === 'rejected' ||
+      reservation.status === 'cancelled'
+  ).sort (
+    (a, b) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime()
+  ).slice(0, 4);
 
   return (
     <div className="space-y-12">
@@ -294,29 +269,62 @@ export default function HistoryPage() {
                 <th className="px-5 py-3.5 text-left text-[11px] font-semibold uppercase tracking-widest text-neutral-400">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {BOOKING_HISTORY.map((row) => (
-                <tr key={`${row.name}-${row.dateTime}`}>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-600 text-xs font-bold shrink-0">
-                        {row.initials}
-                      </div>
-                      <span className="font-semibold text-neutral-800">{row.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-neutral-600">{row.dateTime}</td>
-                  <td className="px-5 py-4 text-neutral-700">{row.resource}</td>
-                  <td className="px-5 py-4">
-                    {row.status === 'COMPLETED' ? (
-                      <span className="text-green-600 font-bold text-xs uppercase tracking-wide">Completed</span>
-                    ) : (
-                      <span className="text-red-500 font-bold text-xs uppercase tracking-wide">No Show</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+           <tbody className="divide-y divide-neutral-100">
+  {bookingHistory.map((reservation) => (
+    <tr key={reservation.id}>
+      <td className="px-5 py-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-full bg-[#4B135F] flex items-center justify-center text-white text-xs font-bold shrink-0">
+            {reservation.guestName
+              .split(' ')
+              .map((word) => word[0])
+              .slice(0, 2)
+              .join('')
+              .toUpperCase()}
+          </div>
+
+          <div>
+            <p className="font-semibold text-neutral-800">
+              {reservation.guestName}
+            </p>
+            <p className="text-xs text-neutral-400">
+              {reservation.userEmail}
+            </p>
+          </div>
+        </div>
+      </td>
+
+      <td className="px-5 py-4 text-neutral-600">
+        {reservation.date} • {reservation.arrivalTime}
+      </td>
+
+      <td className="px-5 py-4 text-neutral-700">
+        {reservation.tableName ??
+          `Table ${reservation.tableId}`}
+      </td>
+
+      <td className="px-5 py-4">
+        {reservation.status === 'confirmed' ? (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-xs">
+            ✓ Disetujui
+          </span>
+        ) : reservation.status === 'rejected' ? (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-red-100 text-red-700 font-semibold text-xs">
+            ✕ Ditolak
+          </span>
+        ) : reservation.status === 'cancelled' ? (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-neutral-100 text-neutral-600 font-semibold text-xs">
+            ○ Dibatalkan
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">
+            ⏳ Menunggu
+          </span>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
           </table>
         </div>
 

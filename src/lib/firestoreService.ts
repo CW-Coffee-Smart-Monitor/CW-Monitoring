@@ -379,3 +379,15 @@ export async function rejectReservation(
     }
   );
 }
+
+  export async function cancelReservation(
+    reservationId: string,
+  ) {
+    await updateDoc(
+      doc(db, RESERVATIONS_COLLECTION, reservationId),
+      {
+        status: 'cancelled',
+        canceledAt: new Date().toISOString(),
+      }
+    );
+  }
