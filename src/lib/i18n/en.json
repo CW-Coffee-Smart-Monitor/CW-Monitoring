@@ -13,5 +13,161 @@
       "mapStatus": "Map Status"
     },
     "logout": "Logout"
+  },
+  "bookingHistory": {
+    "title": "My Reservation History",
+    "loading": "Loading reservation history...",
+    "loginRequired": "Please log in to view your reservation history.",
+    "loadError": "Reservation history could not be loaded at this time.",
+    "fallbackBranch": "CW Coffee",
+    "fallbackTable": "Table",
+    "fallbackBlock": "Block"
+  },
+  "help": {
+    "title": "Help Center",
+    "faqLabel": "FAQ",
+    "contactTitle": "Need more help?",
+    "contactSub": "Our team is ready to assist you through the following channels.",
+    "emailLabel": "Email Support",
+    "waLabel": "WhatsApp Support",
+    "waStatus": "Online",
+    "faqs": [
+      {
+        "question": "How do I make a reservation?",
+        "answer": "Go to the Booking menu, select a table on the map, then tap the Book Now button."
+      },
+      {
+        "question": "What is RFID and how do I use it?",
+        "answer": "RFID is used to check in at your table. Tap your RFID card on the available sensor."
+      },
+      {
+        "question": "Can I cancel my reservation?",
+        "answer": "Yes, you can cancel your reservation before check-in time through the Booking menu."
+      },
+      {
+        "question": "Why can't I select a table?",
+        "answer": "The table may be full or currently being cleaned. Please try selecting another table."
+      }
+    ]
+  },
+    "profile": {
+    "title": "My Profile",
+    "menu": {
+      "settings": {
+        "title": "Account Settings",
+        "subtitle": "Personal data and password"
+      },
+      "history": {
+        "title": "Booking History",
+        "subtitle": "Check your coffee history"
+      },
+      "help": {
+        "title": "Help Center",
+        "subtitle": "Help & complaints"
+      }
+    }
+  },
+  "home": {
+    "sensors": {
+      "noise": {
+        "title": "Quiet Vibe",
+        "value": "55 dB",
+        "description": "Great for focusing"
+      },
+      "temperature": {
+        "title": "Temperature",
+        "value": "22°C",
+        "description": "AC comfortable & stable"
+      }
+    }
+  },
+  "map": {
+    "floorPlan": "Floor Plan",
+    "live": "LIVE",
+    "offline": "OFFLINE",
+    "occupied": "occupied",
+    "of": "of",
+    "occupancy": "Occupancy",
+    "available": "Available",
+    "reserved": "Reserved",
+    "updated": "Updated",
+    "justNow": "Just now",
+    "minutesAgo": "m ago",
+    "selectArea": "Select Area",
+    "soon": "Soon",
+    "open": "open",
+    "full": "Full",
+    "filterAmenities": "Filter Amenities",
+    "statusLegend": "Status Legend",
+    "legendItems": {
+      "available":  { "label": "Available",       "sub": "Ready to sit" },
+      "occupied":   { "label": "Occupied",        "sub": "Currently in use" },
+      "reserved":   { "label": "Reserved / Hold", "sub": "Active reservation" },
+      "attention":  { "label": "Needs Attention", "sub": "Needs cleaning" }
+    },
+    "seatsFree": "seats free",
+    "clickHint": "Click a table on the map for full details",
+    "autoAssign": "Auto Assign Table",
+    "findBest": "Find Best Table",
+    "mapUnavailable": "Map not available yet",
+    "mapUnavailableSub": "is under development",
+    "amenities": {
+      "power":  "Power Outlets",
+      "sofa2":  "Sofa 2P",
+      "sofa4":  "Sofa 4P",
+      "quiet":  "Quiet Spot"
+    },
+    "rooms": {
+      "ac1":        { "label": "AC 1" },
+      "ac2":        { "label": "AC 2" },
+      "semiOutdoor":{ "label": "Semi Outdoor" },
+      "outdoor":    { "label": "Outdoor" }
+    }
+  },
+  "activeBookingBanner": {
+    "title": "Active Booking"
+  },
+  "capacityCard": {
+    "title": "CW Coffee Capacity",
+    "realTime": "Real-Time Sync",
+    "busy": "BUSY",
+    "moderate": "MODERATE",
+    "quiet": "QUIET",
+    "filledLabel": "Tables Filled",
+    "seatsAvailable": "There are still seats available!",
+    "availableCount": "available"
+  },
+  "historyCard": {
+    "sectionLabel": "VISIT HISTORY",
+    "loading": "Loading history...",
+    "loadingSubtitle": "Fetching your latest reservation data.",
+    "noHistory": "No recent history",
+    "loginRequired": "Log in to view your booking history.",
+    "loadError": "Failed to load booking history.",
+    "atLocation": "at",
+    "status": {
+      "confirmed": { "label": "Confirmed" },
+      "pending":   { "label": "Pending"   },
+      "cancelled": { "label": "Cancelled" }
+    },
+    "dateLocale": "en-US"
+  },"recommendationCard": {
+    "label": "Recommendation",
+    "viewDetail": "View Detail"
+  },
+   "tableGrid": {
+    "title": "All Tables"
+  },
+  "trafficCard": {
+    "title": "Peak Prediction",
+    "today": "Today",
+    "peakAt": "Peak busy hour at 14:00",
+    "avoidHours": "Avoid busy hours 14:00 - 16:00"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications.",
+    "markAllRead": "Mark all as read"
   }
+  
 }

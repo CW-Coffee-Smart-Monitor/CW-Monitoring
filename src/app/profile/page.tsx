@@ -1,13 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Settings, Bell, Coffee, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Settings, Coffee, HelpCircle } from 'lucide-react';
 import ProfileCard from "@/components/profile/ProfileCard";
-import ModeCard from "@/components/profile/ModeCard";
 import MenuCard from "@/components/profile/MenuCard";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { t } = useLanguage();
+  const p = t.profile;
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 py-2">
@@ -21,37 +23,31 @@ export default function ProfilePage() {
           <ArrowLeft className="h-4 w-4 text-neutral-700" strokeWidth={2.5} />
         </button>
         <h1 className="text-lg font-semibold text-neutral-800">
-          Profil Saya
+          {p.title}
         </h1>
       </div>
 
       {/* Profile */}
       <ProfileCard />
 
-      {/* Mode */}
-      <ModeCard
-        mode="Meeting"
-        description="Rekomendasi meja dan fitur IoT disesuaikan dengan profil vibe ini."
-      />
-
       {/* Menu */}
       <MenuCard
         items={[
           {
-            title: "Pengaturan Akun",
-            subtitle: "Data diri dan kata sandi",
+            title: p.menu.settings.title,
+            subtitle: p.menu.settings.subtitle,
             icon: <Settings className="h-5 w-5" strokeWidth={2.5} />,
             href: "/profile/settings",
           },
           {
-            title: "Riwayat Booking",
-            subtitle: "Cek riwayat kopi kamu",
+            title: p.menu.history.title,
+            subtitle: p.menu.history.subtitle,
             icon: <Coffee className="h-5 w-5" strokeWidth={2.5} />,
             href: "/profile/history",
           },
           {
-            title: "Pusat Bantuan",
-            subtitle: "Bantuan & keluhan",
+            title: p.menu.help.title,
+            subtitle: p.menu.help.subtitle,
             icon: <HelpCircle className="h-5 w-5" strokeWidth={2.5} />,
             href: "/profile/help",
           },

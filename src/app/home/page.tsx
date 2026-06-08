@@ -1,6 +1,7 @@
 'use client';
 
 import { useTableContext } from '@/context/TableContext';
+import { useLanguage } from '@/context/LanguageContext';
 import CapacityCard from '@/components/home/CapacityCard';
 import RecommendationCard from '@/components/home/RecommendationCard';
 import TrafficCard from '@/components/home/TrafficCard';
@@ -9,6 +10,8 @@ import VisitHistoryCard from '@/components/home/HistoryCard';
 
 export default function HomePage() {
   const { summary } = useTableContext();
+  const { t } = useLanguage();
+  const s = t.home.sensors;
 
   return (
     <section className="space-y-6 p-4">
@@ -31,15 +34,15 @@ export default function HomePage() {
       {/* IoT Sensors */}
       <div className="grid grid-cols-2 gap-3">
         <SensorCard
-          title="Quiet Vibe"
-          value="55 dB"
-          description="Cocok buat fokus"
+          title={s.noise.title}
+          value={s.noise.value}
+          description={s.noise.description}
           type="noise"
         />
         <SensorCard
-          title="Suhu"
-          value="22°C"
-          description="AC nyaman & stabil"
+          title={s.temperature.title}
+          value={s.temperature.value}
+          description={s.temperature.description}
           type="temperature"
         />
       </div>

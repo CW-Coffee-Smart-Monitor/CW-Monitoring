@@ -10,6 +10,7 @@ const STATUS_BADGE: Record<BookingStatus, { label: string; className: string }> 
   confirmed: { label: 'Dikonfirmasi', className: 'bg-emerald-100 text-emerald-700' },
   cancelled: { label: 'Dibatalkan', className: 'bg-rose-100 text-rose-600' },
   completed: { label: 'Selesai', className: 'bg-blue-100 text-blue-700' },
+  rejected: { label: 'Ditolak', className: 'bg-rose-100 text-rose-600' },
 };
 
 export default function BookingHistory({ bookings }: BookingHistoryProps) {

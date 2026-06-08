@@ -1,4 +1,4 @@
-export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled';
+export type ReservationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 export type ReservationDuration = '1jam' | '2jam' | 'bebas';
 export type ReservationScope = 'single-table' | 'block';
 
@@ -14,6 +14,9 @@ export interface Reservation {
   coveredTableIds: number[];
   coveredTableNames?: string[];
 
+  rfidId: string;
+  rfidAssignedAt: string; // ISO string
+
   reservationScope: ReservationScope;
 
   guestName: string;
@@ -23,6 +26,9 @@ export interface Reservation {
   toleranceMinutes: number;
   status: ReservationStatus;
   createdAt: string;
+  rejectedAt?: string;
+  approvedAt?: string;
+  canceledAt?: string;
   expiresAt: number;
   source: 'map' | 'form';
 
