@@ -19,16 +19,16 @@ type BookingRow = {
 
 /* ── Mock data ─────────────────────────────────────────────── */
 const ALL_BOOKINGS: BookingRow[] = [
-  { initials: 'EK', name: 'Elena Koleva',   avatarBg: 'bg-[#4B135F]',    date: 'Oct 24, 2023', timeRange: '09:00 AM - 11:00 AM', resource: 'Meeting Room A',    location: 'Floor 3, North Wing',   status: 'COMPLETED'  },
-  { initials: 'JD', name: 'Julian Davis',   avatarBg: 'bg-purple-200',   date: 'Oct 24, 2023', timeRange: '01:30 PM - 05:00 PM', resource: 'Desk T-09',         location: 'Open Plan Area',        status: 'NO SHOW'    },
-  { initials: 'SM', name: 'Sarah Mitchell', avatarBg: 'bg-yellow-700',   date: 'Oct 23, 2023', timeRange: '10:00 AM - 10:30 AM', resource: 'Phone Booth 2',     location: 'Floor 2, Quiet Zone',   status: 'COMPLETED'  },
-  { initials: 'MR', name: 'Marcus Reed',    avatarBg: 'bg-neutral-400',  date: 'Oct 23, 2023', timeRange: 'All Day',             resource: 'Boardroom Focus',   location: 'Floor 4, Executive Suite', status: 'COMPLETED' },
-  { initials: 'AV', name: 'Ava Voss',       avatarBg: 'bg-[#4B135F]',    date: 'Oct 25, 2023', timeRange: '12:00 PM - 01:00 PM', resource: 'Conference Room B', location: 'Floor 1, Main Building', status: 'SCHEDULED' },
-  { initials: 'TW', name: 'Tommy Wilson',   avatarBg: 'bg-purple-300',   date: 'Oct 25, 2023', timeRange: '03:00 PM - 04:00 PM', resource: 'Zoom',              location: 'Remote',                status: 'SCHEDULED'  },
-  { initials: 'LB', name: 'Lena Brown',     avatarBg: 'bg-yellow-600',   date: 'Oct 24, 2023', timeRange: '11:15 AM - 12:00 PM', resource: 'Cafe Meeting Area', location: 'Floor 1, South Wing',   status: 'COMPLETED'  },
-  { initials: 'RN', name: 'Ryan Nguyen',    avatarBg: 'bg-blue-500',     date: 'Oct 22, 2023', timeRange: '02:00 PM - 04:00 PM', resource: 'Meeting Room C',    location: 'Floor 2, East Wing',    status: 'COMPLETED'  },
-  { initials: 'PK', name: 'Priya Kumar',    avatarBg: 'bg-pink-500',     date: 'Oct 22, 2023', timeRange: '09:30 AM - 11:00 AM', resource: 'Quiet Pod 3',       location: 'Floor 2, Quiet Zone',   status: 'NO SHOW'    },
-  { initials: 'BT', name: 'Ben Torres',     avatarBg: 'bg-neutral-600',  date: 'Oct 21, 2023', timeRange: '01:00 PM - 03:00 PM', resource: 'Hot Desk T-22',     location: 'Open Plan Area',        status: 'COMPLETED'  },
+  { initials: 'EK', name: 'Elena Koleva', avatarBg: 'bg-[#4B135F]', date: 'Oct 24, 2023', timeRange: '09:00 AM - 11:00 AM', resource: 'Meeting Room A', location: 'Floor 3, North Wing', status: 'COMPLETED' },
+  { initials: 'JD', name: 'Julian Davis', avatarBg: 'bg-purple-200', date: 'Oct 24, 2023', timeRange: '01:30 PM - 05:00 PM', resource: 'Desk T-09', location: 'Open Plan Area', status: 'NO SHOW' },
+  { initials: 'SM', name: 'Sarah Mitchell', avatarBg: 'bg-yellow-700', date: 'Oct 23, 2023', timeRange: '10:00 AM - 10:30 AM', resource: 'Phone Booth 2', location: 'Floor 2, Quiet Zone', status: 'COMPLETED' },
+  { initials: 'MR', name: 'Marcus Reed', avatarBg: 'bg-neutral-400', date: 'Oct 23, 2023', timeRange: 'All Day', resource: 'Boardroom Focus', location: 'Floor 4, Executive Suite', status: 'COMPLETED' },
+  { initials: 'AV', name: 'Ava Voss', avatarBg: 'bg-[#4B135F]', date: 'Oct 25, 2023', timeRange: '12:00 PM - 01:00 PM', resource: 'Conference Room B', location: 'Floor 1, Main Building', status: 'SCHEDULED' },
+  { initials: 'TW', name: 'Tommy Wilson', avatarBg: 'bg-purple-300', date: 'Oct 25, 2023', timeRange: '03:00 PM - 04:00 PM', resource: 'Zoom', location: 'Remote', status: 'SCHEDULED' },
+  { initials: 'LB', name: 'Lena Brown', avatarBg: 'bg-yellow-600', date: 'Oct 24, 2023', timeRange: '11:15 AM - 12:00 PM', resource: 'Cafe Meeting Area', location: 'Floor 1, South Wing', status: 'COMPLETED' },
+  { initials: 'RN', name: 'Ryan Nguyen', avatarBg: 'bg-blue-500', date: 'Oct 22, 2023', timeRange: '02:00 PM - 04:00 PM', resource: 'Meeting Room C', location: 'Floor 2, East Wing', status: 'COMPLETED' },
+  { initials: 'PK', name: 'Priya Kumar', avatarBg: 'bg-pink-500', date: 'Oct 22, 2023', timeRange: '09:30 AM - 11:00 AM', resource: 'Quiet Pod 3', location: 'Floor 2, Quiet Zone', status: 'NO SHOW' },
+  { initials: 'BT', name: 'Ben Torres', avatarBg: 'bg-neutral-600', date: 'Oct 21, 2023', timeRange: '01:00 PM - 03:00 PM', resource: 'Hot Desk T-22', location: 'Open Plan Area', status: 'COMPLETED' },
 ];
 
 const STATUS_STYLE: Record<BookingStatus, string> = {
@@ -155,11 +155,10 @@ export default function BookingHistoryPage() {
                 key={p}
                 type="button"
                 onClick={() => setCurrentPage(p)}
-                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                  currentPage === p
+                className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${currentPage === p
                     ? 'bg-[#4B135F] text-white'
                     : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
-                }`}
+                  }`}
               >
                 {p}
               </button>
