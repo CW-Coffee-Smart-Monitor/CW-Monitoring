@@ -1,4 +1,4 @@
-export type ReservationStatus = 'pending' | 'confirmed' | 'cancelled';
+export type ReservationStatus = 'pending' | 'confirmed' | 'rejected' | 'cancelled';
 export type ReservationDuration = '1jam' | '2jam' | 'bebas';
 export type ReservationScope = 'single-table' | 'block';
 
@@ -13,6 +13,9 @@ export interface Reservation {
   // daftar sofa yang ikut ter-cover reservasi
   coveredTableIds: number[];
   coveredTableNames?: string[];
+
+  rfidId: string;
+  rfidAssignedAt: string; // ISO string
 
   reservationScope: ReservationScope;
 

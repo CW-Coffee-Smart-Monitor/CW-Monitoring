@@ -1,7 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft, Clock, Monitor, Users, X, Check } from 'lucide-react';
+import { Reservation } from '@/types/reservation';
+import { subscribeToAllReservations, acceptReservation, rejectReservation } from '@/lib/firestoreService';
+import { auth } from '@/lib/firebase';
 
 /* ── Types ─────────────────────────────────────────────────── */
 type Tier = 'PREMIUM' | 'STANDARD' | 'ENTERPRISE';
@@ -37,238 +40,107 @@ type Booking = {
 const SVG_W = 609, SVG_H = 483;
 
 const TABLE_POS: { id: number; x: number; y: number; w?: number; h?: number }[] = [
-  { id: 1,  x: 31,  y: 126 },
-  { id: 2,  x: 114, y: 127 },
-  { id: 3,  x: 31,  y: 189 },
-  { id: 4,  x: 114, y: 189 },
-  { id: 5,  x: 31,  y: 273 },
-  { id: 6,  x: 112, y: 271 },
-  { id: 7,  x: 197, y: 271 },
-  { id: 8,  x: 448, y: 125 },
-  { id: 9,  x: 448, y: 188 },
+  { id: 1, x: 31, y: 126 },
+  { id: 2, x: 114, y: 127 },
+  { id: 3, x: 31, y: 189 },
+  { id: 4, x: 114, y: 189 },
+  { id: 5, x: 31, y: 273 },
+  { id: 6, x: 112, y: 271 },
+  { id: 7, x: 197, y: 271 },
+  { id: 8, x: 448, y: 125 },
+  { id: 9, x: 448, y: 188 },
   { id: 10, x: 448, y: 294 },
   { id: 11, x: 448, y: 357 },
-  { id: 12, x: 28,  y: 461 },
-  { id: 13, x: 91,  y: 461 },
+  { id: 12, x: 28, y: 461 },
+  { id: 13, x: 91, y: 461 },
   { id: 14, x: 154, y: 461 },
   { id: 15, x: 217, y: 461 },
-  { id: 16, x: 10,  y: 347, w: 25, h: 61 },
-  { id: 17, x: 52,  y: 347, w: 25, h: 61 },
-  { id: 18, x: 94,  y: 347, w: 25, h: 61 },
+  { id: 16, x: 10, y: 347, w: 25, h: 61 },
+  { id: 17, x: 52, y: 347, w: 25, h: 61 },
+  { id: 18, x: 94, y: 347, w: 25, h: 61 },
   { id: 19, x: 136, y: 347, w: 25, h: 61 },
   { id: 20, x: 178, y: 347, w: 25, h: 61 },
   { id: 21, x: 220, y: 347, w: 25, h: 61 },
   { id: 22, x: 262, y: 347, w: 25, h: 61 },
-  { id: 23, x: 10,  y: 29,  w: 25, h: 64 },
-  { id: 24, x: 52,  y: 29,  w: 25, h: 64 },
-  { id: 25, x: 94,  y: 29,  w: 25, h: 64 },
-  { id: 26, x: 136, y: 29,  w: 25, h: 64 },
-  { id: 27, x: 178, y: 29,  w: 25, h: 64 },
-  { id: 28, x: 220, y: 29,  w: 25, h: 64 },
-  { id: 29, x: 345, y: 29,  w: 25, h: 64 },
-  { id: 30, x: 388, y: 29,  w: 25, h: 64 },
-  { id: 31, x: 430, y: 29,  w: 25, h: 64 },
-  { id: 32, x: 472, y: 29,  w: 25, h: 64 },
+  { id: 23, x: 10, y: 29, w: 25, h: 64 },
+  { id: 24, x: 52, y: 29, w: 25, h: 64 },
+  { id: 25, x: 94, y: 29, w: 25, h: 64 },
+  { id: 26, x: 136, y: 29, w: 25, h: 64 },
+  { id: 27, x: 178, y: 29, w: 25, h: 64 },
+  { id: 28, x: 220, y: 29, w: 25, h: 64 },
+  { id: 29, x: 345, y: 29, w: 25, h: 64 },
+  { id: 30, x: 388, y: 29, w: 25, h: 64 },
+  { id: 31, x: 430, y: 29, w: 25, h: 64 },
+  { id: 32, x: 472, y: 29, w: 25, h: 64 },
 ];
 
-/* ── Mock data ─────────────────────────────────────────────── */
-const ALL_BOOKINGS: Booking[] = [
-  {
-    id: 1,
-    name: 'Elena Rodriguez',
-    initials: 'ER',
-    avatarBg: 'bg-neutral-600',
-    hasPhoto: false,
-    tier: 'PREMIUM',
-    department: 'Marketing D.',
-    email: 's.jenkins@creativeco.com',
-    company: 'CreativeCo Design',
-    role: 'Senior Art Director',
-    resource: 'Meeting Room B',
-    resourceIcon: 'monitor',
-    time: 'Tomorrow, 2:00 PM – 4:00 PM',
-    date: 'Oct 26, 2023',
-    duration: '2 Hours',
-    guests: '4 External',
-    purpose: '"Quarterly review presentation with client stakeholder team. Need reliable VC setup."',
-    totalBookings: 42,
-    cancellationRate: '2.4%',
-    lastVisit: 'Oct 12, 2023',
-    urgent: false,
-    tab: 'Pending',
-    bookedTableId: 8,
-  },
-  {
-    id: 2,
-    name: 'Marcus Johnson',
-    initials: 'MJ',
-    avatarBg: 'bg-purple-400',
-    hasPhoto: false,
-    tier: 'STANDARD',
-    department: 'Freelance D.',
-    email: 'm.johnson@freelance.com',
-    company: 'Independent',
-    role: 'UX Consultant',
-    resource: 'Hot Desk T-15',
-    resourceIcon: 'desk',
-    time: 'Oct 24, 9:00 AM – 5:00 PM',
-    date: 'Oct 24, 2023',
-    duration: '8 Hours',
-    guests: '0 External',
-    purpose: '"Full-day deep work session for client deliverable. Prefer window desk."',
-    totalBookings: 18,
-    cancellationRate: '5.6%',
-    lastVisit: 'Oct 10, 2023',
-    urgent: false,
-    tab: 'Pending',
-    bookedTableId: 15,
-  },
-  {
-    id: 3,
-    name: 'Sarah Chen',
-    initials: 'SC',
-    avatarBg: 'bg-neutral-500',
-    hasPhoto: false,
-    tier: 'ENTERPRISE',
-    department: 'Acme Corp',
-    email: 's.chen@acmecorp.com',
-    company: 'Acme Corp',
-    role: 'Product Manager',
-    resource: 'Podcast Studio A',
-    resourceIcon: 'podcast',
-    time: 'Today, 4:00 PM – 6:00 PM',
-    date: 'Oct 25, 2023',
-    duration: '2 Hours',
-    guests: '2 External',
-    purpose: '"Recording internal product update podcast episode with remote guests."',
-    totalBookings: 67,
-    cancellationRate: '1.1%',
-    lastVisit: 'Oct 20, 2023',
-    urgent: true,
-    tab: 'Pending',
-    bookedTableId: 2,
-  },
-  {
-    id: 4,
-    name: 'Sarah Chen',
-    initials: 'SC',
-    avatarBg: 'bg-neutral-500',
-    hasPhoto: false,
-    tier: 'ENTERPRISE',
-    department: 'Acme Corp',
-    email: 's.chen@acmecorp.com',
-    company: 'Acme Corp',
-    role: 'Product Manager',
-    resource: 'Podcast Studio A',
-    resourceIcon: 'podcast',
-    time: 'Today, 4:00 PM – 6:00 PM',
-    date: 'Oct 26, 2023',
-    duration: '2 Hours',
-    guests: '2 External',
-    purpose: '"Follow-up recording session for missed content from previous booking."',
-    totalBookings: 67,
-    cancellationRate: '1.1%',
-    lastVisit: 'Oct 20, 2023',
-    urgent: true,
-    tab: 'Pending',
-    bookedTableId: 4,
-  },
-  {
-    id: 5,
-    name: 'Sarah Chen',
-    initials: 'SC',
-    avatarBg: 'bg-neutral-500',
-    hasPhoto: false,
-    tier: 'ENTERPRISE',
-    department: 'Acme Corp',
-    email: 's.chen@acmecorp.com',
-    company: 'Acme Corp',
-    role: 'Product Manager',
-    resource: 'Podcast Studio A',
-    resourceIcon: 'podcast',
-    time: 'Today, 4:00 PM – 6:00 PM',
-    date: 'Oct 27, 2023',
-    duration: '2 Hours',
-    guests: '2 External',
-    purpose: '"Third session in the enterprise podcast series for Q4 product launch."',
-    totalBookings: 67,
-    cancellationRate: '1.1%',
-    lastVisit: 'Oct 20, 2023',
-    urgent: true,
-    tab: 'Pending',
-    bookedTableId: 25,
-  },
-  {
-    id: 6,
-    name: 'James Tan',
-    initials: 'JT',
-    avatarBg: 'bg-blue-500',
-    hasPhoto: false,
-    tier: 'STANDARD',
-    department: 'Tech Startup',
-    email: 'j.tan@techstartup.io',
-    company: 'TechStartup Inc',
-    role: 'CTO',
-    resource: 'Meeting Room A',
-    resourceIcon: 'monitor',
-    time: 'Nov 1, 10:00 AM – 12:00 PM',
-    date: 'Nov 1, 2023',
-    duration: '2 Hours',
-    guests: '3 Internal',
-    purpose: '"Sprint planning and architecture review with engineering team."',
-    totalBookings: 29,
-    cancellationRate: '3.4%',
-    lastVisit: 'Oct 18, 2023',
-    urgent: false,
-    tab: 'Approved',
-    bookedTableId: 9,
-  },
-  {
-    id: 7,
-    name: 'Priya Nair',
-    initials: 'PN',
-    avatarBg: 'bg-pink-500',
-    hasPhoto: false,
-    tier: 'PREMIUM',
-    department: 'Design Agency',
-    email: 'p.nair@designagency.com',
-    company: 'Design Agency',
-    role: 'Creative Lead',
-    resource: 'Lounge Suite 1',
-    resourceIcon: 'desk',
-    time: 'Oct 30, 1:00 PM – 3:00 PM',
-    date: 'Oct 30, 2023',
-    duration: '2 Hours',
-    guests: '1 External',
-    purpose: '"Client discovery workshop for new brand identity project."',
-    totalBookings: 55,
-    cancellationRate: '0.9%',
-    lastVisit: 'Oct 22, 2023',
-    urgent: false,
-    tab: 'Rejected',
-    bookedTableId: 14,
-  },
-];
-
-const PENDING_COUNT = ALL_BOOKINGS.filter(b => b.tab === 'Pending').length;
-
-const TIER_STYLES: Record<Tier, string> = {
-  PREMIUM:    'bg-amber-100 text-amber-700',
-  STANDARD:   'bg-neutral-100 text-neutral-600',
-  ENTERPRISE: 'bg-purple-100 text-[#4B135F]',
-};
-
-const RESOURCE_ICON_MAP = {
-  monitor: <Monitor className="w-4 h-4 text-neutral-500 shrink-0" />,
-  desk:    <Monitor className="w-4 h-4 text-neutral-500 shrink-0" />,
-  podcast: <Monitor className="w-4 h-4 text-neutral-500 shrink-0" />,
+/* ── Initials helper ───────────────────────────────────────── */
+const getInitials = (name?: string) => {
+  if (!name) return '';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + (parts[1][0] || '')).toUpperCase();
 };
 
 export default function BookingApprovalsPage() {
+  const [allBookings, setAllBookings] = useState<Reservation[]>([]);
   const [activeTab, setActiveTab] = useState<TabKey>('Pending');
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<Reservation | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const filtered = ALL_BOOKINGS.filter(b => b.tab === activeTab);
+  useEffect(() => {
+    const unsubscribe = subscribeToAllReservations((reservations) => {
+      setAllBookings(reservations);
+    });
+    return unsubscribe;
+  }, []);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleApprove = async (reservationId: string) => {
+    try {
+      const managerId = auth.currentUser?.uid || 'admin';
+      await acceptReservation(reservationId, managerId);
+      showToast('Booking request approved successfully.');
+      setSelectedBooking(null);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to approve reservation.');
+    }
+  };
+
+  const handleReject = async (reservationId: string) => {
+    try {
+      await rejectReservation(reservationId);
+      showToast('Booking request rejected.');
+      setSelectedBooking(null);
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to reject reservation.');
+    }
+  };
+
+  const PENDING_COUNT = allBookings.filter(b => b.status === 'pending').length;
+
+  const filtered = allBookings.filter((booking) => {
+    if (activeTab === 'Pending') {
+      return booking.status === 'pending';
+    }
+
+    if (activeTab === 'Approved') {
+      return booking.status === 'confirmed';
+    }
+
+    if (activeTab === 'Rejected') {
+      return booking.status === 'rejected';
+    }
+
+    return false;
+
+  });
 
   return (
     <div>
@@ -295,11 +167,10 @@ export default function BookingApprovalsPage() {
               key={tab}
               type="button"
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab
-                  ? 'bg-[#EDE9F5] text-[#4B135F] font-semibold'
-                  : 'text-neutral-500 hover:bg-neutral-50'
-              }`}
+              className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab
+                ? 'bg-[#EDE9F5] text-[#4B135F] font-semibold'
+                : 'text-neutral-500 hover:bg-neutral-50'
+                }`}
             >
               {tab === 'Pending' ? `Pending (${PENDING_COUNT})` : tab}
             </button>
@@ -312,36 +183,31 @@ export default function BookingApprovalsPage() {
         {filtered.map((booking) => (
           <div
             key={booking.id}
-            className={`bg-white rounded-xl border ${booking.urgent ? 'border-l-4 border-l-[#4B135F] border-neutral-200' : 'border-neutral-200'} p-5 flex items-center gap-5`}
+            className={`bg-white rounded-xl border ${booking.branch ? 'border-l-4 border-l-[#4B135F] border-neutral-200' : 'border-neutral-200'} p-5 flex items-center gap-5`}
           >
             {/* Avatar */}
-            <div className={`${booking.avatarBg} w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0`}>
-              {booking.initials}
+            <div className="bg-[#4B135F] w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
+              {getInitials(booking.guestName)}
             </div>
 
-            {/* Name + tier */}
+            {/* Name + email */}
             <div className="min-w-40">
               <p className="font-bold text-neutral-800">
-                {booking.name}
-                {booking.urgent && <span className="ml-1 text-red-500">!</span>}
+                {booking.guestName}
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${TIER_STYLES[booking.tier]}`}>
-                  {booking.tier}
-                </span>
-                <span className="text-xs text-neutral-400">{booking.department}</span>
+                <span className="text-xs text-neutral-400">{booking.userEmail}</span>
               </div>
             </div>
 
             {/* Resource + time */}
             <div className="flex-1">
               <div className="flex items-center gap-1.5 text-neutral-700 font-semibold text-sm">
-                {RESOURCE_ICON_MAP[booking.resourceIcon]}
-                {booking.resource}
+                {booking.room || booking.tableName || (booking.blockCode ? `Block ${booking.blockCode}` : 'Workspace Desk')}
               </div>
               <div className="flex items-center gap-1.5 text-neutral-400 text-xs mt-1">
                 <Clock className="w-3.5 h-3.5 shrink-0" />
-                {booking.time}
+                {booking.date} @ {booking.arrivalTime} ({booking.duration})
               </div>
             </div>
 
@@ -395,48 +261,27 @@ export default function BookingApprovalsPage() {
               <div className="w-56 shrink-0 space-y-4 pr-6 border-r border-neutral-100">
                 {/* Profile card */}
                 <div className="bg-neutral-50 rounded-xl p-4 text-center space-y-2">
-                  <div className={`${selectedBooking.avatarBg} w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto relative`}>
-                    {selectedBooking.initials}
-                    <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${TIER_STYLES[selectedBooking.tier]} whitespace-nowrap`}>
-                      {selectedBooking.tier}
+                  <div className="bg-[#4B135F] w-20 h-20 rounded-full flex items-center justify-center text-white font-bold text-2xl mx-auto relative">
+                    {getInitials(selectedBooking.guestName)}
+                    <span className="bg-[#EDE9F5] text-[#4B135F] px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide whitespace-nowrap absolute -bottom-1 left-1/2 -translate-x-1/2 border border-purple-200 shadow-sm">
+                      {selectedBooking.date}
                     </span>
                   </div>
                   <div className="pt-2">
-                    <p className="font-bold text-neutral-800">{selectedBooking.name}</p>
-                    <p className="text-xs text-[#4B135F]">{selectedBooking.email}</p>
+                    <p className="font-bold text-neutral-800">{selectedBooking.guestName}</p>
+                    <p className="text-xs text-[#4B135F]">{selectedBooking.userEmail}</p>
                   </div>
                   <div className="text-xs text-neutral-500 space-y-1 pt-1">
                     <div className="flex items-center justify-center gap-1.5">
                       <Monitor className="w-3.5 h-3.5 shrink-0" />
-                      {selectedBooking.company}
+                      {selectedBooking.room || selectedBooking.tableName || (selectedBooking.blockCode ? `Block ${selectedBooking.blockCode}` : 'Workspace Desk')}
                     </div>
-                    <div className="flex items-center justify-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 shrink-0" />
-                      {selectedBooking.role}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Member analytics */}
-                <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-2">Member Analytics</p>
-                  <div className="flex justify-between text-xs">
-                    <span className="flex items-center gap-1 text-neutral-500">
-                      <Clock className="w-3 h-3" /> Total Bookings
-                    </span>
-                    <span className="font-bold text-neutral-800">{selectedBooking.totalBookings}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="flex items-center gap-1 text-neutral-500">
-                      <Monitor className="w-3 h-3" /> Cancellation Rate
-                    </span>
-                    <span className="font-bold text-neutral-800">{selectedBooking.cancellationRate}</span>
-                  </div>
-                  <div className="flex justify-between text-xs">
-                    <span className="flex items-center gap-1 text-neutral-500">
-                      <Clock className="w-3 h-3" /> Last Visit
-                    </span>
-                    <span className="font-bold text-neutral-800">{selectedBooking.lastVisit}</span>
+                    {selectedBooking.note && (
+                      <div className="flex items-center justify-center gap-1.5 max-w-full truncate">
+                        <Users className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{selectedBooking.note}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -446,23 +291,25 @@ export default function BookingApprovalsPage() {
                 {/* Resource header */}
                 <div className="flex items-start justify-between">
                   <div>
-                    <h3 className="text-xl font-bold text-neutral-800">{selectedBooking.resource}</h3>
+                    <h3 className="text-xl font-bold text-neutral-800">
+                      {selectedBooking.room || selectedBooking.tableName || (selectedBooking.blockCode ? `Block ${selectedBooking.blockCode}` : 'Workspace Desk')}
+                    </h3>
                     <div className="flex items-center gap-2 mt-2">
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#EDE9F5] text-[#4B135F] text-[10px] font-bold uppercase tracking-wide">
-                        <Monitor className="w-3 h-3" /> Video Enabled
+                        <Monitor className="w-3 h-3" /> Booking Request
                       </span>
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-neutral-100 text-neutral-600 text-[10px] font-bold uppercase tracking-wide">
-                        <Users className="w-3 h-3" /> Cap: 8
+                        <Users className="w-3 h-3" /> Branch: {selectedBooking.branch || 'Utama'}
                       </span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-2xl font-bold text-[#4B135F]">14:00</p>
+                    <p className="text-2xl font-bold text-[#4B135F]">{selectedBooking.arrivalTime}</p>
                     <p className="text-xs text-neutral-400">{selectedBooking.date}</p>
                   </div>
                 </div>
 
-                {/* Duration + Guests */}
+                {/* Duration + Scope */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-neutral-50 rounded-lg p-3">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-1">Duration</p>
@@ -472,21 +319,23 @@ export default function BookingApprovalsPage() {
                     </div>
                   </div>
                   <div className="bg-neutral-50 rounded-lg p-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-1">Expected Guests</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-1">Scope &amp; Source</p>
                     <div className="flex items-center gap-1.5 font-semibold text-neutral-800 text-sm">
                       <Users className="w-4 h-4 text-neutral-400" />
-                      {selectedBooking.guests}
+                      <span className="capitalize">{selectedBooking.reservationScope} ({selectedBooking.source})</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Stated purpose */}
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-2">Stated Purpose</p>
-                  <div className="bg-neutral-50 rounded-lg p-3 text-sm text-neutral-600 italic leading-relaxed">
-                    {selectedBooking.purpose}
+                {selectedBooking.note && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-2">Stated Purpose</p>
+                    <div className="bg-neutral-50 rounded-lg p-3 text-sm text-neutral-600 italic leading-relaxed">
+                      {selectedBooking.note}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Floor map — same SVG as dashboard, highlights booked table */}
                 <div className="rounded-xl overflow-hidden border border-neutral-200 bg-neutral-50">
@@ -498,7 +347,8 @@ export default function BookingApprovalsPage() {
                   >
                     <image href="/Frame 112.svg" x="0" y="0" width={SVG_W} height={SVG_H} />
                     {TABLE_POS.map(pos => {
-                      const isBooked = pos.id === selectedBooking.bookedTableId;
+                      const isBooked = pos.id === selectedBooking.tableId || selectedBooking.coveredTableIds?.includes(pos.id);
+                      const isMainTable = pos.id === selectedBooking.tableId || (selectedBooking.tableId == null && selectedBooking.coveredTableIds?.[0] === pos.id);
                       const w = pos.w ?? 63, h = pos.h ?? 43;
                       const x = pos.x - w / 2, y = pos.y - h / 2;
                       const fill = isBooked ? '#4B135F' : '#9ca3af';
@@ -506,7 +356,7 @@ export default function BookingApprovalsPage() {
                       return (
                         <g key={pos.id}>
                           <rect x={x} y={y} width={w} height={h} fill={fill} opacity={opacity} rx={4} />
-                          {isBooked && (() => {
+                          {isBooked && isMainTable && (() => {
                             const labelW = 110;
                             const labelH = 28;
                             const pinCy = y - 16;
@@ -539,7 +389,7 @@ export default function BookingApprovalsPage() {
                                   fontWeight="700"
                                   fontFamily="inherit"
                                 >
-                                  {selectedBooking.name.split(' ')[0]} · Seat #{pos.id}
+                                  {selectedBooking.guestName.split(' ')[0]} · Seat #{pos.id}
                                 </text>
                               </>
                             );
@@ -550,7 +400,7 @@ export default function BookingApprovalsPage() {
                   </svg>
                   <div className="px-3 py-1.5 bg-[#EDE9F5] flex items-center gap-2 text-xs text-[#4B135F] font-semibold">
                     <span className="w-2.5 h-2.5 rounded-sm bg-[#4B135F] inline-block" />
-                    {selectedBooking.resource} — Lokasi yang dipesan
+                    {selectedBooking.room || selectedBooking.tableName || (selectedBooking.blockCode ? `Block ${selectedBooking.blockCode}` : 'Workspace Desk')} — Lokasi yang dipesan
                   </div>
                 </div>
               </div>
@@ -568,7 +418,7 @@ export default function BookingApprovalsPage() {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setSelectedBooking(null)}
+                  onClick={() => handleReject(selectedBooking.id)}
                   className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-red-50 border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-100 transition-colors"
                 >
                   <X className="w-4 h-4" />
@@ -576,7 +426,7 @@ export default function BookingApprovalsPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectedBooking(null)}
+                  onClick={() => handleApprove(selectedBooking.id)}
                   className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-[#4B135F] text-white text-sm font-semibold hover:bg-[#3a0f4a] transition-colors"
                 >
                   <Check className="w-4 h-4" />
@@ -585,6 +435,13 @@ export default function BookingApprovalsPage() {
               </div>
             </div>
           </dialog>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-800 text-white text-sm px-5 py-2.5 rounded-xl shadow-xl z-50 whitespace-nowrap">
+          {toast}
         </div>
       )}
     </div>

@@ -11,6 +11,8 @@ import {
   saveReservation,
   getFirestoreErrorMessage,
   hasReservationConflictForTables,
+  findDeviceByTableId,
+  assignRFIDToReservation,
 } from '@/lib/firestoreService';
 import { getReservationTiming } from '@/lib/reservationUtils';
 import {
@@ -72,10 +74,23 @@ function CreateBookingContent() {
         return;
       }
 
+      const primaryTableId = coveredTableIds[0];
+      const device =
+          await findDeviceByTableId(primaryTableId);
+
+          if (!device) {
+            setSubmitError('Sofa untuk blok yang dipilih tidak ditemukan. Silakan pilih blok lain.');
+            return;
+          }
+
       await saveReservation({
         blockCode: values.blockCode,
         coveredTableIds,
         coveredTableNames,
+
+        rfidId: device.rfidId,
+        rfidAssignedAt: new Date().toISOString(),
+
         reservationScope: 'block',
         guestName: user.displayName || user.email || 'User',
         date: values.date,
