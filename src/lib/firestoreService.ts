@@ -292,3 +292,133 @@ export async function getBlockAvailabilityForDateTime(params: {
 
   return availability;
 }
+
+export async function assignRFIDToReservation(
+  reservationId: string,
+  rfidId: string,
+  role: 'customer' | 'staff' | 'karyawan',
+): Promise<void> {
+  await updateDoc(
+    doc(db, RESERVATIONS_COLLECTION, reservationId),
+    {
+      rfidId,
+      role,
+      rfidAssignedAt: new Date().toISOString(),
+      checkInStatus: 'pending',
+    }
+  );
+}
+
+export async function findDeviceByTableId(
+  tableId: number,
+): Promise<{
+  id: string;
+  rfidId: string;
+  tableId: number
+} | null> {
+  const q = query(
+    collection(db, 'devices'),
+    where('tableId', '==', tableId)
+  );
+  const snapshot = await getDocs(q);
+
+  if (snapshot.empty) {
+    return null;
+  }
+
+  const docSnap = snapshot.docs[0];
+
+  return {
+    id: docSnap.id,
+    ...(docSnap.data() as {
+      rfidId: string;
+      tableId: number;
+    }),
+  };
+}
+
+//  ─── Part Admin ─────────────────────────────────────────
+
+export function subscribePendingReservations(
+  callback: (data: Reservation[]) => void
+) {
+  const q = query(
+    collection(db, RESERVATIONS_COLLECTION),
+    where('status', '==', 'pending')
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const reservations = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Reservation[];
+
+    callback(reservations);
+  });
+}
+
+export async function acceptReservation(
+  reservationId: string,
+  userId: string,
+) {
+  await updateDoc(
+    doc(db, RESERVATIONS_COLLECTION, reservationId),
+    {
+      status: 'confirmed',
+      approvedAt: new Date().toISOString(),
+      approvedBy: userId,
+    }
+  );
+}
+
+export async function rejectReservation(
+  reservationId: string,
+) {
+  await updateDoc(
+    doc(db, RESERVATIONS_COLLECTION, reservationId),
+    {
+      status: 'rejected',
+      rejectedAt: new Date().toISOString(),
+    }
+  );
+}
+
+// Tambahkan di bagian bawah firestoreService.ts
+
+export function subscribeToUserReservationNotifications(
+  userId: string,
+  callback: (notifications: ReservationNotification[]) => void,
+  onError?: ReservationListenerError
+): Unsubscribe {
+  const ref = query(
+    collection(db, RESERVATIONS_COLLECTION),
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
+
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      const notifications: ReservationNotification[] = [];
+
+      snapshot.docChanges().forEach((change) => {
+        const data = { id: change.doc.id, ...change.doc.data() } as Reservation;
+
+        // ✅ Hanya trigger notif saat dokumen berubah (bukan load awal)
+        if (change.type === 'modified') {
+          notifications.push(buildNotificationFromReservation(data));
+        }
+
+        // ✅ Notif saat reservasi baru dibuat
+        if (change.type === 'added' && !snapshot.metadata.hasPendingWrites) {
+          notifications.push(buildNotificationFromReservation(data));
+        }
+      });
+
+      if (notifications.length > 0) {
+        callback(notifications);
+      }
+    },
+    (error) => onError?.(error)
+  );
+}
