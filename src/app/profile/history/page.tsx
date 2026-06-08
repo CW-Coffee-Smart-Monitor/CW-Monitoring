@@ -12,9 +12,13 @@ import {
   subscribeToUserReservations,
 } from "@/lib/firestoreService";
 import { auth } from "@/lib/firebase";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function HistoryBookingPage() {
   const router = useRouter();
+  const { t } = useLanguage();
+  const bh = t.bookingHistory; // ✅ shorthand
+
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -23,12 +27,11 @@ export default function HistoryBookingPage() {
     let unsubscribeReservations: (() => void) | undefined;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (user: User | null) => {
-      // Clean up any previous reservation subscription when auth changes
       unsubscribeReservations?.();
 
       if (!user) {
         setReservations([]);
-        setErrorMessage("Masuk terlebih dahulu untuk melihat histori reservasi Anda.");
+        setErrorMessage(bh.loginRequired); // ✅
         setLoading(false);
         return;
       }
@@ -46,7 +49,7 @@ export default function HistoryBookingPage() {
           console.error("LOAD USER RESERVATIONS ERROR:", error);
           setReservations([]);
           setErrorMessage(
-            getFirestoreErrorMessage(error, "Histori reservasi tidak dapat dimuat saat ini.")
+            getFirestoreErrorMessage(error, bh.loadError) // ✅
           );
           setLoading(false);
         }
@@ -57,7 +60,7 @@ export default function HistoryBookingPage() {
       unsubscribeAuth();
       unsubscribeReservations?.();
     };
-  }, []); // single stable effect, no deps needed
+  }, [bh]); // ✅ tambahkan bh sebagai dependency
 
   const bookings = useMemo<BookingItem[]>(
     () =>
@@ -69,11 +72,11 @@ export default function HistoryBookingPage() {
 
         return {
           id: reservation.id,
-          branch: reservation.branch ?? "CW Coffee",
+          branch: reservation.branch ?? bh.fallbackBranch, // ✅
           blockCode,
           blockLabel: isSingleTable
-            ? reservation.tableName ?? `Meja ${blockCode}`
-            : `Blok ${blockCode}`,
+            ? reservation.tableName ?? `${bh.fallbackTable} ${blockCode}` // ✅
+            : `${bh.fallbackBlock} ${blockCode}`,                          // ✅
           date: reservation.date,
           time: reservation.arrivalTime,
           note: reservation.note ?? "",
@@ -82,11 +85,12 @@ export default function HistoryBookingPage() {
           paymentProof: null,
         };
       }),
-    [reservations]
+    [reservations, bh] // ✅ tambahkan bh
   );
 
   return (
     <div className="min-h-screen bg-white p-4 space-y-4">
+
       {/* Header */}
       <div className="flex items-center gap-3">
         <button
@@ -95,13 +99,15 @@ export default function HistoryBookingPage() {
         >
           <ArrowLeft className="h-4 w-4 text-neutral-700" strokeWidth={5} />
         </button>
-        <h1 className="text-lg font-semibold text-neutral-900">History Reservasi Saya</h1>
+        <h1 className="text-lg font-semibold text-neutral-900">
+          {bh.title} {/* ✅ */}
+        </h1>
       </div>
 
       {/* Card Wrapper */}
       <div className="rounded-2xl bg-white p-3 shadow-sm border border-neutral-200">
         {loading && (
-          <p className="p-4 text-sm text-neutral-500">Memuat histori reservasi...</p>
+          <p className="p-4 text-sm text-neutral-500">{bh.loading}</p> // ✅
         )}
         {!loading && errorMessage && (
           <p className="p-4 text-sm text-amber-700">{errorMessage}</p>

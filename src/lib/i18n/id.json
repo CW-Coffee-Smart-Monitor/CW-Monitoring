@@ -8,10 +8,63 @@
     },
     "preferences": {
       "title": "Preferensi",
-      "darkMode": "Dark Mode",
+      "darkMode": "Mode Gelap",
       "language": "Bahasa",
       "mapStatus": "Status di Peta"
     },
     "logout": "Keluar"
+  },
+  "bookingHistory": {
+    "title": "History Reservasi Saya",
+    "loading": "Memuat histori reservasi...",
+    "loginRequired": "Masuk terlebih dahulu untuk melihat histori reservasi Anda.",
+    "loadError": "Histori reservasi tidak dapat dimuat saat ini.",
+    "fallbackBranch": "CW Coffee",
+    "fallbackTable": "Meja",
+    "fallbackBlock": "Blok"
+  },
+  "help": {
+    "title": "Pusat Bantuan",
+    "faqLabel": "FAQ",
+    "contactTitle": "Butuh bantuan lebih lanjut?",
+    "contactSub": "Tim kami siap membantu kamu melalui saluran berikut.",
+    "emailLabel": "Email Support",
+    "waLabel": "WhatsApp Support",
+    "waStatus": "Online",
+    "faqs": [
+      {
+        "question": "Bagaimana cara melakukan reservasi?",
+        "answer": "Masuk ke menu Booking, pilih meja di peta, lalu klik tombol Pesan Sekarang."
+      },
+      {
+        "question": "Apa itu RFID dan cara menggunakannya?",
+        "answer": "RFID digunakan untuk check-in di meja. Tempelkan kartu RFID kamu ke sensor yang tersedia."
+      },
+      {
+        "question": "Apakah saya bisa membatalkan reservasi?",
+        "answer": "Ya, kamu bisa membatalkan reservasi sebelum waktu check-in melalui menu Booking."
+      },
+      {
+        "question": "Kenapa saya tidak bisa memilih meja?",
+        "answer": "Kemungkinan meja sedang penuh atau dalam status cleaning. Coba pilih meja lain."
+      }
+    ]
+  },
+   "profile": {
+    "title": "Profil Saya",
+    "menu": {
+      "settings": {
+        "title": "Pengaturan Akun",
+        "subtitle": "Data diri dan kata sandi"
+      },
+      "history": {
+        "title": "Riwayat Booking",
+        "subtitle": "Cek riwayat kopi kamu"
+      },
+      "help": {
+        "title": "Pusat Bantuan",
+        "subtitle": "Bantuan & keluhan"
+      }
+    }
   }
 }

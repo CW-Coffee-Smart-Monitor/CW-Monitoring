@@ -13,5 +13,58 @@
       "mapStatus": "Map Status"
     },
     "logout": "Logout"
+  },
+  "bookingHistory": {
+    "title": "My Reservation History",
+    "loading": "Loading reservation history...",
+    "loginRequired": "Please log in to view your reservation history.",
+    "loadError": "Reservation history could not be loaded at this time.",
+    "fallbackBranch": "CW Coffee",
+    "fallbackTable": "Table",
+    "fallbackBlock": "Block"
+  },
+  "help": {
+    "title": "Help Center",
+    "faqLabel": "FAQ",
+    "contactTitle": "Need more help?",
+    "contactSub": "Our team is ready to assist you through the following channels.",
+    "emailLabel": "Email Support",
+    "waLabel": "WhatsApp Support",
+    "waStatus": "Online",
+    "faqs": [
+      {
+        "question": "How do I make a reservation?",
+        "answer": "Go to the Booking menu, select a table on the map, then tap the Book Now button."
+      },
+      {
+        "question": "What is RFID and how do I use it?",
+        "answer": "RFID is used to check in at your table. Tap your RFID card on the available sensor."
+      },
+      {
+        "question": "Can I cancel my reservation?",
+        "answer": "Yes, you can cancel your reservation before check-in time through the Booking menu."
+      },
+      {
+        "question": "Why can't I select a table?",
+        "answer": "The table may be full or currently being cleaned. Please try selecting another table."
+      }
+    ]
+  },
+    "profile": {
+    "title": "My Profile",
+    "menu": {
+      "settings": {
+        "title": "Account Settings",
+        "subtitle": "Personal data and password"
+      },
+      "history": {
+        "title": "Booking History",
+        "subtitle": "Check your coffee history"
+      },
+      "help": {
+        "title": "Help Center",
+        "subtitle": "Help & complaints"
+      }
+    }
   }
 }
