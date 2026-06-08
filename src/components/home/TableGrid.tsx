@@ -1,11 +1,8 @@
 'use client';
 
-/**
- * TableGrid — Grid of all table cards with animated transitions.
- */
-
 import { motion } from 'framer-motion';
 import { useTableContext } from '@/context/TableContext';
+import { useLanguage } from '@/context/LanguageContext';
 import TableCard from '@/components/ui/TableCard';
 
 const containerVariants = {
@@ -22,11 +19,12 @@ const itemVariants = {
 
 export default function TableGrid() {
   const { tables } = useTableContext();
+  const { t } = useLanguage();
 
   return (
     <div>
       <h2 className="mb-3 text-sm font-semibold text-neutral-600">
-        Semua Meja
+        {t.tableGrid.title}
       </h2>
       <motion.div
         variants={containerVariants}

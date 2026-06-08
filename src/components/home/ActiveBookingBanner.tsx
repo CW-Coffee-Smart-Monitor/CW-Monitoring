@@ -1,19 +1,13 @@
 'use client';
 
-/**
- * ActiveBookingBanner — Floating banner showing user's active booking.
- * Only visible if at least one table has uid matching a demo/sim user.
- */
-
 import { motion, AnimatePresence } from 'framer-motion';
 import { Timer, X } from 'lucide-react';
 import { useTableContext } from '@/context/TableContext';
 import { useTableStatus } from '@/hooks/useTableStatus';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ActiveBookingBanner() {
   const { tables } = useTableContext();
-
-  // Find the first table occupied by the current "user" (for demo, any occupied)
   const activeTable = tables.find((t) => t.isOccupied && t.uid);
 
   return (
@@ -27,6 +21,7 @@ export default function ActiveBookingBanner() {
 
 function ActiveBannerInner({ tableId }: { tableId: number }) {
   const { tables } = useTableContext();
+  const { t } = useLanguage();
   const table = tables.find((t) => t.id === tableId)!;
   const { elapsedFormatted, statusColor } = useTableStatus(table);
 
@@ -42,7 +37,7 @@ function ActiveBannerInner({ tableId }: { tableId: number }) {
           <Timer className="h-4 w-4 text-amber-400" />
           <div>
             <p className="text-xs font-semibold text-amber-300">
-              Booking Aktif — {table.name}
+              {t.activeBookingBanner.title} — {table.name}
             </p>
             <p className={`font-mono text-lg font-bold ${statusColor}`}>
               {elapsedFormatted}

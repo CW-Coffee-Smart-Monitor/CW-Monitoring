@@ -66,5 +66,103 @@
         "subtitle": "Help & complaints"
       }
     }
+  },
+  "home": {
+    "sensors": {
+      "noise": {
+        "title": "Quiet Vibe",
+        "value": "55 dB",
+        "description": "Great for focusing"
+      },
+      "temperature": {
+        "title": "Temperature",
+        "value": "22°C",
+        "description": "AC comfortable & stable"
+      }
+    }
+  },
+  "map": {
+    "floorPlan": "Floor Plan",
+    "live": "LIVE",
+    "offline": "OFFLINE",
+    "occupied": "occupied",
+    "of": "of",
+    "occupancy": "Occupancy",
+    "available": "Available",
+    "reserved": "Reserved",
+    "updated": "Updated",
+    "justNow": "Just now",
+    "minutesAgo": "m ago",
+    "selectArea": "Select Area",
+    "soon": "Soon",
+    "open": "open",
+    "full": "Full",
+    "filterAmenities": "Filter Amenities",
+    "statusLegend": "Status Legend",
+    "legendItems": {
+      "available":  { "label": "Available",       "sub": "Ready to sit" },
+      "occupied":   { "label": "Occupied",        "sub": "Currently in use" },
+      "reserved":   { "label": "Reserved / Hold", "sub": "Active reservation" },
+      "attention":  { "label": "Needs Attention", "sub": "Needs cleaning" }
+    },
+    "seatsFree": "seats free",
+    "clickHint": "Click a table on the map for full details",
+    "autoAssign": "Auto Assign Table",
+    "findBest": "Find Best Table",
+    "mapUnavailable": "Map not available yet",
+    "mapUnavailableSub": "is under development",
+    "amenities": {
+      "power":  "Power Outlets",
+      "sofa2":  "Sofa 2P",
+      "sofa4":  "Sofa 4P",
+      "quiet":  "Quiet Spot"
+    },
+    "rooms": {
+      "ac1":        { "label": "AC 1" },
+      "ac2":        { "label": "AC 2" },
+      "semiOutdoor":{ "label": "Semi Outdoor" },
+      "outdoor":    { "label": "Outdoor" }
+    }
+  },
+  "activeBookingBanner": {
+    "title": "Active Booking"
+  },
+  "capacityCard": {
+    "title": "CW Coffee Capacity",
+    "realTime": "Real-Time Sync",
+    "busy": "BUSY",
+    "moderate": "MODERATE",
+    "quiet": "QUIET",
+    "filledLabel": "Tables Filled",
+    "seatsAvailable": "There are still seats available!",
+    "availableCount": "available"
+  },
+  "historyCard": {
+    "sectionLabel": "VISIT HISTORY",
+    "loading": "Loading history...",
+    "loadingSubtitle": "Fetching your latest reservation data.",
+    "noHistory": "No recent history",
+    "loginRequired": "Log in to view your booking history.",
+    "loadError": "Failed to load booking history.",
+    "atLocation": "at",
+    "status": {
+      "confirmed": { "label": "Confirmed" },
+      "pending":   { "label": "Pending"   },
+      "cancelled": { "label": "Cancelled" }
+    },
+    "dateLocale": "en-US"
+  },"recommendationCard": {
+    "label": "Recommendation",
+    "viewDetail": "View Detail"
+  },
+   "tableGrid": {
+    "title": "All Tables"
+  },
+  "trafficCard": {
+    "title": "Peak Prediction",
+    "today": "Today",
+    "peakAt": "Peak busy hour at 14:00",
+    "avoidHours": "Avoid busy hours 14:00 - 16:00"
   }
+  
 }
