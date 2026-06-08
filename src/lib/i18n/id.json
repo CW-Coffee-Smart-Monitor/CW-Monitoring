@@ -8,10 +8,166 @@
     },
     "preferences": {
       "title": "Preferensi",
-      "darkMode": "Dark Mode",
+      "darkMode": "Mode Gelap",
       "language": "Bahasa",
       "mapStatus": "Status di Peta"
     },
     "logout": "Keluar"
+  },
+  "bookingHistory": {
+    "title": "History Reservasi Saya",
+    "loading": "Memuat histori reservasi...",
+    "loginRequired": "Masuk terlebih dahulu untuk melihat histori reservasi Anda.",
+    "loadError": "Histori reservasi tidak dapat dimuat saat ini.",
+    "fallbackBranch": "CW Coffee",
+    "fallbackTable": "Meja",
+    "fallbackBlock": "Blok"
+  },
+  "help": {
+    "title": "Pusat Bantuan",
+    "faqLabel": "FAQ",
+    "contactTitle": "Butuh bantuan lebih lanjut?",
+    "contactSub": "Tim kami siap membantu kamu melalui saluran berikut.",
+    "emailLabel": "Email Support",
+    "waLabel": "WhatsApp Support",
+    "waStatus": "Online",
+    "faqs": [
+      {
+        "question": "Bagaimana cara melakukan reservasi?",
+        "answer": "Masuk ke menu Booking, pilih meja di peta, lalu klik tombol Pesan Sekarang."
+      },
+      {
+        "question": "Apa itu RFID dan cara menggunakannya?",
+        "answer": "RFID digunakan untuk check-in di meja. Tempelkan kartu RFID kamu ke sensor yang tersedia."
+      },
+      {
+        "question": "Apakah saya bisa membatalkan reservasi?",
+        "answer": "Ya, kamu bisa membatalkan reservasi sebelum waktu check-in melalui menu Booking."
+      },
+      {
+        "question": "Kenapa saya tidak bisa memilih meja?",
+        "answer": "Kemungkinan meja sedang penuh atau dalam status cleaning. Coba pilih meja lain."
+      }
+    ]
+  },
+   "profile": {
+    "title": "Profil Saya",
+    "menu": {
+      "settings": {
+        "title": "Pengaturan Akun",
+        "subtitle": "Data diri dan kata sandi"
+      },
+      "history": {
+        "title": "Riwayat Booking",
+        "subtitle": "Cek riwayat kopi kamu"
+      },
+      "help": {
+        "title": "Pusat Bantuan",
+        "subtitle": "Bantuan & keluhan"
+      }
+    }
+  },
+  "home": {
+    "sensors": {
+      "noise": {
+        "title": "Kebisingan",
+        "value": "55 dB",
+        "description": "Cocok buat fokus"
+      },
+      "temperature": {
+        "title": "Suhu",
+        "value": "22°C",
+        "description": "AC nyaman & stabil"
+      }
+    }
+  },
+  "map": {
+    "floorPlan": "Denah Lantai",
+    "live": "LIVE",
+    "offline": "OFFLINE",
+    "occupied": "terisi",
+    "of": "dari",
+    "occupancy": "Okupansi",
+    "available": "Tersedia",
+    "reserved": "Dipesan",
+    "updated": "Diperbarui",
+    "justNow": "Baru saja",
+    "minutesAgo": "m lalu",
+    "selectArea": "Pilih Area",
+    "soon": "Segera",
+    "open": "tersedia",
+    "full": "Penuh",
+    "filterAmenities": "Filter Fasilitas",
+    "statusLegend": "Keterangan Status",
+    "legendItems": {
+      "available":  { "label": "Tersedia",        "sub": "Bisa langsung duduk" },
+      "occupied":   { "label": "Terisi",          "sub": "Sedang digunakan" },
+      "reserved":   { "label": "Dipesan / Tahan", "sub": "Ada reservasi aktif" },
+      "attention":  { "label": "Perlu Perhatian", "sub": "Perlu dibersihkan" }
+    },
+    "seatsFree": "kursi tersedia",
+    "clickHint": "Klik meja di peta untuk detail lengkap",
+    "autoAssign": "Auto Assign Meja",
+    "findBest": "Temukan Meja Terbaik",
+    "mapUnavailable": "Peta belum tersedia",
+    "mapUnavailableSub": "sedang dalam pengembangan",
+    "amenities": {
+      "power":  "Colokan",
+      "sofa2":  "Sofa 2P",
+      "sofa4":  "Sofa 4P",
+      "quiet":  "Quiet Spot"
+    },
+    "rooms": {
+      "ac1":        { "label": "AC 1" },
+      "ac2":        { "label": "AC 2" },
+      "semiOutdoor":{ "label": "Semi Outdoor" },
+      "outdoor":    { "label": "Outdoor" }
+    }
+  },
+  "activeBookingBanner": {
+    "title": "Booking Aktif"
+  },
+  "capacityCard": {
+    "title": "Kapasitas CW Coffee",
+    "realTime": "Real-Time Sync",
+    "busy": "RAMAI",
+    "moderate": "SEDANG",
+    "quiet": "SEPI",
+    "filledLabel": "Meja Terisi",
+    "seatsAvailable": "Masih ada tempat duduk yang tersedia!",
+    "availableCount": "tersedia"
+  },
+  "historyCard": {
+    "sectionLabel": "RIWAYAT KUNJUNGAN",
+    "loading": "Memuat history...",
+    "loadingSubtitle": "Sedang mengambil data reservasi terakhir Anda.",
+    "noHistory": "Tidak ada riwayat terbaru",
+    "loginRequired": "Masuk untuk melihat riwayat pemesanan Anda.",
+    "loadError": "Gagal memuat riwayat pemesanan.",
+    "atLocation": "di",
+    "status": {
+      "confirmed": { "label": "Dikonfirmasi" },
+      "pending":   { "label": "Menunggu"     },
+      "cancelled": { "label": "Dibatalkan"   }
+    },
+    "dateLocale": "id-ID"
+  },
+  "recommendationCard": {
+    "label": "Rekomendasi",
+    "viewDetail": "Lihat Detail"
+  },
+  "tableGrid": {
+    "title": "Semua Meja"
+  },
+   "trafficCard": {
+    "title": "Prediksi Puncak",
+    "today": "Hari ini",
+    "peakAt": "Puncak keramaian pukul 14:00",
+    "avoidHours": "Hindari jam sibuk 14:00 - 16:00"
+  },
+  "notifications": {
+    "title": "Notifikasi",
+    "empty": "Tidak ada notifikasi.",
+    "markAllRead": "Tandai semua dibaca"
   }
 }

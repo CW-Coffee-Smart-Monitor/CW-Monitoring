@@ -1,51 +1,53 @@
 'use client';
 
-/**
- * Map Page — Interactive Floor Plan of CW Coffee.
- * Shows real-time table status on an SVG café layout.
- */
-
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Zap, Wifi, WifiOff } from 'lucide-react';
 import { useTableContext } from '@/context/TableContext';
+import { useLanguage } from '@/context/LanguageContext';
 import { TABLE_ROOMS } from '@/data/tables';
 import { TableState } from '@/types';
 import FloorPlan from '@/components/map/FloorPlan';
 import { TableDetailContent } from '@/components/map/TableDetailDrawer';
 import ReservationModal from '@/components/map/ReservationModal';
 
-const AMENITY_FILTERS = [
-  { label: 'Power Outlets', filterKey: 'Colokan' },
-  { label: 'Sofa 2P',       filterKey: 'Sofa2'   },
-  { label: 'Sofa 4P',       filterKey: 'Sofa4'   },
-  { label: 'Quiet Spot',    filterKey: 'Tenang'  },
-];
-
-const ROOMS = [
-  { key: 'AC1',          label: 'AC 1',         emoji: '❄️', available: true  },
-  { key: 'AC2',          label: 'AC 2',         emoji: '❄️', available: false },
-  { key: 'Semi Outdoor', label: 'Semi Outdoor', emoji: '🌿', available: false },
-  { key: 'Outdoor',      label: 'Outdoor',      emoji: '☀️', available: false },
-];
-
 export default function MapPage() {
   const { tables } = useTableContext();
+  const { t } = useLanguage();
+  const m = t.map;
+
+  const AMENITY_FILTERS = [
+    { label: m.amenities.power, filterKey: 'Colokan' },
+    { label: m.amenities.sofa2, filterKey: 'Sofa2'   },
+    { label: m.amenities.sofa4, filterKey: 'Sofa4'   },
+    { label: m.amenities.quiet, filterKey: 'Tenang'  },
+  ];
+
+  const ROOMS = [
+    { key: 'AC1',          label: m.rooms.ac1.label,         emoji: '❄️', available: true  },
+    { key: 'AC2',          label: m.rooms.ac2.label,         emoji: '❄️', available: false },
+    { key: 'Semi Outdoor', label: m.rooms.semiOutdoor.label, emoji: '🌿', available: false },
+    { key: 'Outdoor',      label: m.rooms.outdoor.label,     emoji: '☀️', available: false },
+  ];
+
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [roomFilter, setRoomFilter] = useState<string | null>('AC1');
-  const [lastUpdate, setLastUpdate] = useState<string>('Baru saja');
+  const [lastUpdate, setLastUpdate] = useState<string>(m.justNow);
   const [recommendedId, setRecommendedId] = useState<number | null>(null);
   const [selectedTable, setSelectedTable] = useState<TableState | null>(null);
   const [isLive] = useState(true);
   const [showBooking, setShowBooking] = useState(false);
 
-  // Recommended table takes priority over manual click
   const displayTable: TableState | null =
     recommendedId == null
       ? selectedTable
       : (tables.find((t) => t.id === recommendedId) ?? selectedTable);
 
-  const handleCloseDetail = () => { setSelectedTable(null); setRecommendedId(null); setShowBooking(false); };
+  const handleCloseDetail = () => {
+    setSelectedTable(null);
+    setRecommendedId(null);
+    setShowBooking(false);
+  };
 
   const filteredTables = roomFilter
     ? tables.filter((t) => TABLE_ROOMS[t.id] === roomFilter)
@@ -55,16 +57,16 @@ export default function MapPage() {
   const reservedCount  = filteredTables.filter((t) => t.status === 'reserved').length;
   const totalCount     = filteredTables.length;
   const occupancyPct   = totalCount > 0 ? Math.round((occupiedCount / totalCount) * 100) : 0;
-  const activeRoom = ROOMS.find((r) => r.key === roomFilter) ?? ROOMS[0];
+  const activeRoom     = ROOMS.find((r) => r.key === roomFilter) ?? ROOMS[0];
 
   useEffect(() => {
     const start = Date.now();
     const timer = setInterval(() => {
       const diff = Math.floor((Date.now() - start) / 60_000);
-      setLastUpdate(diff < 1 ? 'Just now' : `${diff}m ago`);
+      setLastUpdate(diff < 1 ? m.justNow : `${diff}${m.minutesAgo}`);
     }, 30_000);
     return () => clearInterval(timer);
-  }, []);
+  }, [m.justNow, m.minutesAgo]);
 
   const handleRecommend = () => {
     const candidates = filteredTables.filter((t) => {
@@ -78,11 +80,25 @@ export default function MapPage() {
       return t.facilities.some((f) => f.label.includes(activeFilter));
     });
     if (candidates.length === 0) return;
-    const best = candidates.reduce<typeof candidates[0]>((prev, cur) =>
-      cur.facilities.length > prev.facilities.length ? cur : prev
-    , candidates[0]);
+    const best = candidates.reduce<typeof candidates[0]>(
+      (prev, cur) => cur.facilities.length > prev.facilities.length ? cur : prev,
+      candidates[0]
+    );
     setRecommendedId(best.id);
   };
+
+  const LEGEND_ITEMS = [
+    { color: 'bg-emerald-500', label: m.legendItems.available.label, sub: m.legendItems.available.sub },
+    { color: 'bg-red-500',     label: m.legendItems.occupied.label,  sub: m.legendItems.occupied.sub  },
+    { color: 'bg-amber-400',   label: m.legendItems.reserved.label,  sub: m.legendItems.reserved.sub  },
+    { color: 'bg-orange-500',  label: m.legendItems.attention.label, sub: m.legendItems.attention.sub  },
+  ];
+
+  const TOP_BAR_DOTS = [
+    { dot: 'bg-emerald-500', label: m.legendItems.available.label },
+    { dot: 'bg-red-500',     label: m.legendItems.occupied.label  },
+    { dot: 'bg-amber-400',   label: m.legendItems.reserved.label  },
+  ];
 
   return (
     <section className="grid grid-cols-1 gap-5 pb-8 md:grid-cols-[268px_1fr] md:items-start md:gap-6 lg:grid-cols-[288px_1fr]">
@@ -97,10 +113,11 @@ export default function MapPage() {
           <div className="pointer-events-none absolute bottom-4 right-10 h-16 w-16 rounded-full bg-[#D07E20]/20" />
 
           <div className="relative space-y-4">
-            {/* Header row */}
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">Floor Plan</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40">
+                  {m.floorPlan}
+                </p>
                 <h1 className="mt-0.5 text-xl font-bold text-white">CW Coffee</h1>
               </div>
               <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold ${
@@ -109,30 +126,28 @@ export default function MapPage() {
                 {isLive ? (
                   <>
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
-                    <span>LIVE</span>
+                    <span>{m.live}</span>
                   </>
                 ) : (
                   <>
                     <WifiOff className="h-3 w-3" />
-                    <span>OFFLINE</span>
+                    <span>{m.offline}</span>
                   </>
                 )}
               </div>
             </div>
 
-            {/* Big number */}
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black leading-none tabular-nums text-white">{occupiedCount}</span>
               <div className="flex flex-col">
-                <span className="text-xs font-medium text-white/40">occupied</span>
-                <span className="text-xs font-medium text-white/40">of {totalCount}</span>
+                <span className="text-xs font-medium text-white/40">{m.occupied}</span>
+                <span className="text-xs font-medium text-white/40">{m.of} {totalCount}</span>
               </div>
             </div>
 
-            {/* Occupancy progress bar */}
             <div>
               <div className="mb-1.5 flex justify-between text-[10px] font-medium text-white/40">
-                <span>Occupancy</span>
+                <span>{m.occupancy}</span>
                 <span>{occupancyPct}%</span>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
@@ -143,19 +158,18 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* Mini stats */}
             <div className="grid grid-cols-3 gap-2 border-t border-white/10 pt-3">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-bold text-emerald-400">{availableCount}</span>
-                <span className="text-[9px] uppercase tracking-wider text-white/30">Available</span>
+                <span className="text-[9px] uppercase tracking-wider text-white/30">{m.available}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-bold text-amber-400">{reservedCount}</span>
-                <span className="text-[9px] uppercase tracking-wider text-white/30">Reserved</span>
+                <span className="text-[9px] uppercase tracking-wider text-white/30">{m.reserved}</span>
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-[11px] font-bold text-white/50">{lastUpdate}</span>
-                <span className="text-[9px] uppercase tracking-wider text-white/30">Updated</span>
+                <span className="text-[9px] uppercase tracking-wider text-white/30">{m.updated}</span>
               </div>
             </div>
           </div>
@@ -163,7 +177,9 @@ export default function MapPage() {
 
         {/* Select Area */}
         <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">Select Area</p>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+            {m.selectArea}
+          </p>
           <div className="flex flex-col gap-1.5">
             {ROOMS.map((room) => {
               const isActive = roomFilter === room.key;
@@ -174,9 +190,9 @@ export default function MapPage() {
               if (isOffline) badgeClass = 'bg-neutral-100 text-neutral-400';
               else if (count === 0) badgeClass = 'bg-red-50 text-red-600';
 
-              let badgeText = 'Full';
-              if (isOffline) badgeText = 'Soon';
-              else if (count > 0) badgeText = `${count} open`;
+              let badgeText = m.full;
+              if (isOffline) badgeText = m.soon;
+              else if (count > 0) badgeText = `${count} ${m.open}`;
 
               let btnClass = 'hover:bg-neutral-50';
               if (isActive) btnClass = 'bg-[#4B135F] shadow-sm';
@@ -210,7 +226,9 @@ export default function MapPage() {
 
         {/* Filter Amenities */}
         <div className="rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">Filter Amenities</p>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+            {m.filterAmenities}
+          </p>
           <div className="flex flex-wrap gap-2">
             {AMENITY_FILTERS.map((af) => {
               const isActive = activeFilter === af.filterKey;
@@ -233,14 +251,11 @@ export default function MapPage() {
 
         {/* Status Legend — desktop sidebar */}
         <div className="hidden rounded-2xl border border-neutral-100 bg-white p-4 shadow-sm md:block">
-          <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">Status Legend</p>
+          <p className="mb-3 text-[10px] font-bold uppercase tracking-widest text-neutral-400">
+            {m.statusLegend}
+          </p>
           <div className="space-y-2.5">
-            {[
-              { color: 'bg-emerald-500', label: 'Available',       sub: 'Bisa langsung duduk' },
-              { color: 'bg-red-500',     label: 'Occupied',        sub: 'Sedang digunakan'    },
-              { color: 'bg-amber-400',   label: 'Reserved / Hold', sub: 'Ada reservasi aktif' },
-              { color: 'bg-orange-500',  label: 'Needs Attention', sub: 'Perlu dibersihkan'   },
-            ].map((item) => (
+            {LEGEND_ITEMS.map((item) => (
               <div key={item.label} className="flex items-center gap-3">
                 <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.color}`} />
                 <div>
@@ -258,7 +273,7 @@ export default function MapPage() {
           className="flex items-center justify-center gap-2 rounded-2xl bg-[#4B135F] py-3.5 text-sm font-bold text-white shadow-lg transition-all hover:bg-[#3a0f49] hover:shadow-xl active:scale-[0.98] md:hidden"
         >
           <Sparkles className="h-4 w-4" />
-          Temukan Meja Terbaik
+          {m.findBest}
         </button>
 
       </aside>
@@ -266,88 +281,80 @@ export default function MapPage() {
       {/* RIGHT: Floor Plan + push-panels */}
       <div className="flex min-w-0 flex-col gap-3 md:flex-row">
 
-        {/* Floor Plan column — flex-1, shrinks as panels open (md+) */}
         <div className="flex min-w-0 flex-1 flex-col gap-3">
 
-        {/* Top bar — desktop only */}
-        <div className="hidden items-center justify-between rounded-2xl border border-neutral-100 bg-white px-5 py-3 shadow-sm md:flex">
-          <div className="flex items-center gap-4">
-            {[
-              { dot: 'bg-emerald-500', label: 'Available' },
-              { dot: 'bg-red-500',     label: 'Occupied'  },
-              { dot: 'bg-amber-400',   label: 'Reserved'  },
-            ].map((item) => (
-              <span key={item.label} className="flex items-center gap-1.5 text-xs font-medium text-neutral-500">
-                <span className={`h-2 w-2 rounded-full ${item.dot}`}></span>
+          {/* Top bar — desktop only */}
+          <div className="hidden items-center justify-between rounded-2xl border border-neutral-100 bg-white px-5 py-3 shadow-sm md:flex">
+            <div className="flex items-center gap-4">
+              {TOP_BAR_DOTS.map((item) => (
+                <span key={item.label} className="flex items-center gap-1.5 text-xs font-medium text-neutral-500">
+                  <span className={`h-2 w-2 rounded-full ${item.dot}`} />
+                  <span>{item.label}</span>
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 text-[11px] font-semibold text-neutral-600">
+                <Wifi className="h-3 w-3 text-emerald-500" />
+                {activeRoom.emoji} {activeRoom.label}
+              </span>
+              <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">
+                {availableCount} {m.seatsFree}
+              </span>
+            </div>
+          </div>
+
+          {/* Floor plan or offline placeholder */}
+          {roomFilter != null && !(ROOMS.find((r) => r.key === roomFilter)?.available) ? (
+            <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/80 py-20 text-center md:py-36">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-neutral-100 text-3xl shadow-sm">
+                🚧
+              </div>
+              <div>
+                <p className="text-sm font-bold text-neutral-700">{m.mapUnavailable}</p>
+                <p className="mt-0.5 text-xs text-neutral-400">
+                  <span className="font-medium text-neutral-500">{activeRoom.label}</span>{' '}
+                  {m.mapUnavailableSub}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <FloorPlan
+              highlightFilter={activeFilter}
+              roomFilter={roomFilter}
+              recommendedId={recommendedId}
+              onSelectTable={setSelectedTable}
+            />
+          )}
+
+          {/* Bottom bar — desktop only */}
+          <div className="hidden items-center justify-between md:flex">
+            <div className="flex items-center gap-2 text-[11px] text-neutral-400">
+              <Zap className="h-3.5 w-3.5 text-[#D07E20]" />
+              <span>{m.clickHint}</span>
+            </div>
+            <button
+              onClick={handleRecommend}
+              className="flex items-center gap-2.5 rounded-full bg-[#4B135F] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#4B135F]/30 transition-all hover:bg-[#3a0f49] hover:shadow-xl hover:shadow-[#4B135F]/40 active:scale-[0.97]"
+            >
+              <Sparkles className="h-4 w-4" />
+              {m.autoAssign}
+            </button>
+          </div>
+
+          {/* Mobile legend */}
+          <div className="flex flex-wrap items-center gap-3 px-1 text-[11px] text-neutral-500 md:hidden">
+            {TOP_BAR_DOTS.map((item) => (
+              <span key={item.label} className="flex items-center gap-1.5 font-medium">
+                <span className={`h-2 w-2 rounded-full ${item.dot}`} />
                 <span>{item.label}</span>
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1 text-[11px] font-semibold text-neutral-600">
-              <Wifi className="h-3 w-3 text-emerald-500" />
-              {activeRoom.emoji} {activeRoom.label}
-            </span>
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700">
-              {availableCount} seats free
-            </span>
-          </div>
-        </div>
-
-        {/* Floor plan or offline placeholder */}
-        {roomFilter != null && !(ROOMS.find((r) => r.key === roomFilter)?.available) ? (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/80 py-20 text-center md:py-36">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-neutral-100 text-3xl shadow-sm">
-              🚧
-            </div>
-            <div>
-              <p className="text-sm font-bold text-neutral-700">Peta belum tersedia</p>
-              <p className="mt-0.5 text-xs text-neutral-400">
-                <span className="font-medium text-neutral-500">{activeRoom.label}</span> sedang dalam pengembangan
-              </p>
-            </div>
-          </div>
-        ) : (
-          <FloorPlan
-            highlightFilter={activeFilter}
-            roomFilter={roomFilter}
-            recommendedId={recommendedId}
-            onSelectTable={setSelectedTable}
-          />
-        )}
-
-        {/* Bottom bar — desktop only */}
-        <div className="hidden items-center justify-between md:flex">
-          <div className="flex items-center gap-2 text-[11px] text-neutral-400">
-            <Zap className="h-3.5 w-3.5 text-[#D07E20]" />
-            <span>Klik meja di peta untuk detail lengkap</span>
-          </div>
-          <button
-            onClick={handleRecommend}
-            className="flex items-center gap-2.5 rounded-full bg-[#4B135F] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[#4B135F]/30 transition-all hover:bg-[#3a0f49] hover:shadow-xl hover:shadow-[#4B135F]/40 active:scale-[0.97]"
-          >
-            <Sparkles className="h-4 w-4" />
-            Auto Assign Table
-          </button>
-        </div>
-
-        {/* Mobile legend */}
-        <div className="flex flex-wrap items-center gap-3 px-1 text-[11px] text-neutral-500 md:hidden">
-          {[
-            { dot: 'bg-emerald-500', label: 'Available' },
-            { dot: 'bg-red-500',     label: 'Occupied'  },
-            { dot: 'bg-amber-400',   label: 'Reserved'  },
-          ].map((item) => (
-            <span key={item.label} className="flex items-center gap-1.5 font-medium">
-              <span className={`h-2 w-2 rounded-full ${item.dot}`}></span>
-              <span>{item.label}</span>
-            </span>
-          ))}
-        </div>
 
         </div>
 
-        {/* Mobile detail — bottom sheet overlay, slides up from bottom (md:hidden) */}
+        {/* Mobile detail bottom sheet */}
         <AnimatePresence>
           {displayTable && (
             <motion.div
@@ -363,7 +370,7 @@ export default function MapPage() {
           )}
         </AnimatePresence>
 
-        {/* Mobile booking form — bottom sheet overlay, slides up from bottom (md:hidden) */}
+        {/* Mobile booking bottom sheet */}
         <AnimatePresence>
           {displayTable && showBooking && (
             <motion.div
@@ -379,7 +386,7 @@ export default function MapPage() {
           )}
         </AnimatePresence>
 
-        {/* Desktop booking form panel — slides in to the RIGHT of map, LEFT of detail (md+) */}
+        {/* Desktop booking panel */}
         <AnimatePresence>
           {displayTable && showBooking && (
             <motion.div
@@ -397,7 +404,7 @@ export default function MapPage() {
           )}
         </AnimatePresence>
 
-        {/* Desktop detail panel — slides in to the RIGHT of booking form (md+) */}
+        {/* Desktop detail panel */}
         <AnimatePresence>
           {displayTable && (
             <motion.div
