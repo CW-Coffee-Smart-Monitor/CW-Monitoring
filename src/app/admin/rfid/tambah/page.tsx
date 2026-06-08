@@ -47,7 +47,7 @@ export default function TambahRfidPage() {
         rfidId: rfidId.trim().toUpperCase(),
         tableId: parseInt(tableId.trim()),
         deviceStatus: "active",
-        isOccupied: "false",
+        isOccupied: false,
         status: "available",
         uid: "",
       });
