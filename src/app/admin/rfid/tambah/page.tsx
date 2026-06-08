@@ -126,7 +126,7 @@ export default function TambahRfidPage() {
               <span>deviceStatus</span>
               <span className="font-mono text-neutral-700">&quot;active&quot;</span>
               <span>isOccupied</span>
-              <span className="font-mono text-neutral-700">&quot;false&quot;</span>
+              <span className="font-mono text-neutral-700">false</span>
               <span>status</span>
               <span className="font-mono text-neutral-700">&quot;available&quot;</span>
               <span>uid</span>
