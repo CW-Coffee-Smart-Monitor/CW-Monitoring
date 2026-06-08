@@ -23,8 +23,13 @@ import { TableState, SensorPayload, DashboardSummary, BookingRecord } from '@/ty
 import { Reservation } from '@/types/reservation';
 import { INITIAL_TABLES } from '@/data/tables';
 import { CONFIG } from '@/lib/config';
-import { saveBookingRecord, subscribeToActiveReservations, updateReservationStatus, type TableDoc } from '@/lib/firestoreService';
-import { subscribeToRTDB } from '@/lib/rtdbService';
+import {
+  saveBookingRecord,
+  subscribeToDevices,
+  updateReservationStatus,
+  subscribeToActiveReservations,
+  type DeviceDoc,
+} from '@/lib/firestoreService';
 import { isReservationBlockingLiveTable } from '@/lib/reservationUtils';
 
 // ──────────────────────────── Types ────────────────────────────
@@ -46,8 +51,9 @@ type Action =
   | { type: 'GHOST_CONFIRM'; tableId: number }
   | { type: 'CHECKOUT'; tableId: number; record: BookingRecord }
   | { type: 'DEMO_SET'; tableId: number; status: TableState['status'] }
-  | { type: 'FIRESTORE_SYNC'; updates: Record<number, TableDoc> }
-  | { type: 'RTDB_SYNC'; updates: Record<number, TableDoc> }
+  // | { type: 'FIRESTORE_SYNC'; updates: Record<number, DeviceDoc> }
+  // | { type: 'RTDB_SYNC'; updates: Record<number, TableDoc> }
+  | { type: 'DEVICE_SYNC'; updates: Record<number, DeviceDoc> }
   | { type: 'RESERVE_TABLE'; tableId: number; reservationId: string; guestName: string; expiresAt: number }
   | { type: 'CANCEL_RESERVATION'; tableId: number }
   | { type: 'SYNC_RESERVATIONS'; reservations: Reservation[] };
@@ -170,63 +176,63 @@ function tableReducer(state: State, action: Action): State {
       };
     }
 
-    case 'RTDB_SYNC': {
-      const newControlled = new Set(state.rtdbControlled);
-      const newReservedRTDB = new Set(state.reservedTables);
-      return {
-        ...state,
-        rtdbControlled: newControlled,
-        reservedTables: newReservedRTDB,
-        tables: state.tables.map((t) => {
-          const remote = action.updates[t.id];
-          if (!remote) return t;
-          newControlled.add(t.id);
-          const isOcc = remote.isOccupied ?? false;
-          const elapsed = remote.elapsedSeconds ?? 0;
-          // ESP32 mengirim elapsedSeconds dari millis(), bukan unix timestamp.
-          // Hitung checkInTime mundur dari sekarang agar timer website sinkron.
-          const inferredCheckIn = isOcc && elapsed > 0
-            ? Date.now() - elapsed * 1000
-            : (isOcc ? Date.now() : null);
-          // Jika meja reserved dan orang datang tap RFID → hapus reservation state
-          const clearReservation = t.status === 'reserved' && isOcc;
-          if (clearReservation) newReservedRTDB.delete(t.id);
-          return {
-            ...t,
-            status:         remote.status,
-            uid:            remote.uid ?? null,
-            isOccupied:     isOcc,
-            distance:       remote.distance ?? t.distance,
-            isGhostBooking: remote.isGhostBooking ?? false,
-            checkInTime:    inferredCheckIn,
-            elapsedSeconds: elapsed,
-            ...(clearReservation ? { reservationId: null, reservedBy: null, reservedUntil: null } : {}),
-          };
-        }),
-      };
-    }
+    // case 'RTDB_SYNC': {
+    //   const newControlled = new Set(state.rtdbControlled);
+    //   const newReservedRTDB = new Set(state.reservedTables);
+    //   return {
+    //     ...state,
+    //     rtdbControlled: newControlled,
+    //     reservedTables: newReservedRTDB,
+    //     tables: state.tables.map((t) => {
+    //       const remote = action.updates[t.id];
+    //       if (!remote) return t;
+    //       newControlled.add(t.id);
+    //       const isOcc = remote.isOccupied ?? false;
+    //       const elapsed = remote.elapsedSeconds ?? 0;
+    //       // ESP32 mengirim elapsedSeconds dari millis(), bukan unix timestamp.
+    //       // Hitung checkInTime mundur dari sekarang agar timer website sinkron.
+    //       const inferredCheckIn = isOcc && elapsed > 0
+    //         ? Date.now() - elapsed * 1000
+    //         : (isOcc ? Date.now() : null);
+    //       // Jika meja reserved dan orang datang tap RFID → hapus reservation state
+    //       const clearReservation = t.status === 'reserved' && isOcc;
+    //       if (clearReservation) newReservedRTDB.delete(t.id);
+    //       return {
+    //         ...t,
+    //         status:         remote.status,
+    //         uid:            remote.uid ?? null,
+    //         isOccupied:     isOcc,
+    //         distance:       remote.distance ?? t.distance,
+    //         isGhostBooking: remote.isGhostBooking ?? false,
+    //         checkInTime:    inferredCheckIn,
+    //         elapsedSeconds: elapsed,
+    //         ...(clearReservation ? { reservationId: null, reservedBy: null, reservedUntil: null } : {}),
+    //       };
+    //     }),
+    //   };
+    // }
 
-    case 'FIRESTORE_SYNC': {
-      return {
-        ...state,
-        tables: state.tables.map((t) => {
-          // Jangan overwrite tabel yang sudah dikontrol RTDB (ESP32) atau sedang reserved
-          if (state.rtdbControlled.has(t.id) || state.reservedTables.has(t.id)) return t;
-          const remote = action.updates[t.id];
-          if (!remote) return t;
-          return {
-            ...t,
-            status:        remote.status,
-            uid:           remote.uid ?? null,
-            isOccupied:    remote.isOccupied ?? false,
-            distance:      remote.distance ?? t.distance,
-            isGhostBooking: remote.isGhostBooking ?? false,
-            checkInTime:   remote.checkInTime ?? null,
-            elapsedSeconds: remote.elapsedSeconds ?? 0,
-          };
-        }),
-      };
-    }
+    // case 'FIRESTORE_SYNC': {
+    //   return {
+    //     ...state,
+    //     tables: state.tables.map((t) => {
+    //       // Jangan overwrite tabel yang sudah dikontrol RTDB (ESP32) atau sedang reserved
+    //       if (state.rtdbControlled.has(t.id) || state.reservedTables.has(t.id)) return t;
+    //       const remote = action.updates[t.id];
+    //       if (!remote) return t;
+    //       return {
+    //         ...t,
+    //         status:        remote.status,
+    //         uid:           remote.uid ?? null,
+    //         isOccupied:    remote.isOccupied ?? false,
+    //         distance:      remote.distance ?? t.distance,
+    //         isGhostBooking: remote.isGhostBooking ?? false,
+    //         checkInTime:   remote.checkInTime ?? null,
+    //         elapsedSeconds: remote.elapsedSeconds ?? 0,
+    //       };
+    //     }),
+    //   };
+    // }
 
     case 'RESERVE_TABLE': {
       const newReserved = new Set(state.reservedTables);
@@ -310,6 +316,24 @@ function tableReducer(state: State, action: Action): State {
       });
       return { ...state, reservedTables: newReservedS, tables: updatedTables };
     }
+
+    case 'DEVICE_SYNC': {
+     return {
+      ...state,
+      tables: state.tables.map((t) => {
+        const device = action.updates[t.id];
+
+        if (!device) return t;
+
+        return {
+          ...t,
+          status: device.status as TableState['status'],
+          uid: device.uid,
+          isOccupied: device.isOccupied,
+        };
+      }),
+    };
+  }
 
     default:
       return state;
@@ -417,28 +441,16 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
   }, [state.tables]);
 
   useEffect(() => {
-    const unsub = subscribeToRTDB((updates) => {
-      // Cek SEBELUM dispatch: meja mana yang transisi reserved → occupied
-      // Guard: hanya panggil updateReservationStatus sekali per reservationId
-      // (bukan setiap detik) menggunakan confirmedReservationIds ref.
-      currentTablesRef.current.forEach((t) => {
-        const remote = updates[t.id];
-        if (!remote) return;
-        const isNowOccupied = remote.isOccupied ?? false;
-        if (
-          t.status === 'reserved' &&
-          isNowOccupied &&
-          t.reservationId &&
-          !confirmedReservationIds.current.has(t.reservationId)
-        ) {
-          confirmedReservationIds.current.add(t.reservationId);
-          updateReservationStatus(t.reservationId, 'confirmed').catch(console.error);
-        }
+    const unsub = subscribeToDevices((updates) => {
+      dispatch({
+        type: 'DEVICE_SYNC',
+        updates,
       });
-      dispatch({ type: 'RTDB_SYNC', updates });
     });
+
     return () => unsub();
-  }, []); // Hanya subscribe sekali — baca state via ref
+  }, []);
+  // Hanya subscribe sekali — baca state via ref
   // ── Reservation listener (pending reservations dari Firestore) ──
   useEffect(() => {
     const unsub = subscribeToActiveReservations((reservations) => {

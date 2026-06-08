@@ -293,6 +293,33 @@ export async function getBlockAvailabilityForDateTime(params: {
   return availability;
 }
 
+export interface DeviceDoc {
+  tableId: number;
+  rfidId: string;
+  deviceStatus: string;
+
+  status: string;
+  isOccupied: boolean;
+  uid: string | null;
+}
+
+export function subscribeToDevices(
+  callback: (updates: Record<number, DeviceDoc>) => void
+) {
+  return onSnapshot(
+    collection(db, "devices"),
+    (snapshot) => {
+      const updates: Record<number, DeviceDoc> = {};
+
+      snapshot.forEach((doc) => {
+        const data = doc.data() as DeviceDoc;
+        updates[data.tableId] = data;
+      });
+
+      callback(updates);
+    }
+  );
+}
 export async function assignRFIDToReservation(
   reservationId: string,
   rfidId: string,
