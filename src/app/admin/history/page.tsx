@@ -1,10 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { BarChart2, Calendar, SlidersHorizontal, Table2, Download } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import { Reservation } from '@/types/reservation';
+import  { subscribeToAllReservations } from '@/lib/firestoreService';
+import { useEffect, useState } from 'react';
 
 /* ── Mock data ─────────────────────────────────────────────── */
 
-const PENDING_APPROVALS = [
+const pendingApprovals = [
   {
     initials: 'ER',
     name: 'Elena Rodriguez',
@@ -52,9 +56,25 @@ const ESP_DEVICES = [
 ];
 
 export default function HistoryPage() {
-  return (
-    <div className="space-y-8">
+  const [reservations, setReservations] =
+  useState<Reservation[]>([]);
 
+  useEffect(() => {
+    const unsubscribe = subscribeToAllReservations((newReservations) => {
+      setReservations(newReservations);
+    });
+    return unsubscribe;
+  }, []);
+
+  const pendingApprovals = reservations.filter((r) => r.status === 'pending').sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() -
+      new Date(a.createdAt).getTime()
+  ).slice(0, 3);
+
+
+  return (
+    <div className="space-y-12">
       {/* ── BOOKING APPROVALS ─────────────────────────────── */}
       <section>
         <div className="flex items-start justify-between mb-4">
@@ -63,30 +83,44 @@ export default function HistoryPage() {
             <p className="text-neutral-500 text-sm mt-0.5">Review and manage pending reservation requests from members.</p>
           </div>
           <span className="mt-1 inline-flex items-center px-3 py-1 rounded-full bg-[#4B135F] text-white text-xs font-semibold">
-            {PENDING_APPROVALS.length} Pending
+            {pendingApprovals.length} Pending
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {PENDING_APPROVALS.map((a) => (
-            <div key={`${a.name}-${a.resource}`} className="bg-white rounded-xl border border-neutral-200 p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className={`${a.avatarBg} w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0`}>
-                  {a.initials}
-                </div>
-                <div>
-                  <p className="font-semibold text-neutral-800 text-sm">{a.name}</p>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">{a.tier}</p>
-                </div>
-              </div>
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+  {pendingApprovals.map((reservation) => (
+    <div
+      key={reservation.id}
+      className="bg-white rounded-xl border border-neutral-200 p-4 space-y-3"
+    >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-[#4B135F] flex items-center justify-center text-white text-sm font-bold shrink-0">
+              {reservation.guestName
+                .split(' ')
+                .map((word) => word[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase()}
+            </div>
+
+            <div>
+              <p className="font-semibold text-neutral-800 text-sm">
+                {reservation.guestName}
+              </p>
+
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
+                {reservation.userEmail ?? '-'}
+              </p>
+            </div>
+          </div>
               <div className="text-xs text-neutral-600 space-y-1">
                 <div className="flex justify-between">
                   <span className="text-neutral-400 font-medium">Resource:</span>
-                  <span className="font-semibold text-neutral-700">{a.resource}</span>
+                  <span className="font-semibold text-neutral-700">{reservation.tableId}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-400 font-medium">Time:</span>
-                  <span className="text-neutral-600 text-right">{a.time}</span>
+                  <span className="text-neutral-600 text-right">{reservation.date} • {reservation.arrivalTime}</span>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -330,7 +364,6 @@ export default function HistoryPage() {
           ))}
         </div>
       </section>
-
     </div>
   );
 }
