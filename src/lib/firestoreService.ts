@@ -20,7 +20,10 @@ import { db } from './firebase';
 import { BookingRecord, TableStatus } from '@/types';
 import type { Reservation, ReservationStatus } from '@/types/reservation';
 import { buildReservationDateTime } from '@/lib/reservationUtils';
-
+import {
+  buildNotificationFromReservation,
+  type ReservationNotification,
+} from '@/lib/notificationUtils';
 const RESERVATIONS_COLLECTION = 'reservations';
 type ReservationListenerError = (error: unknown) => void;
 
@@ -287,4 +290,44 @@ export async function getBlockAvailabilityForDateTime(params: {
   }
 
   return availability;
+}
+
+// Tambahkan di bagian bawah firestoreService.ts
+
+export function subscribeToUserReservationNotifications(
+  userId: string,
+  callback: (notifications: ReservationNotification[]) => void,
+  onError?: ReservationListenerError
+): Unsubscribe {
+  const ref = query(
+    collection(db, RESERVATIONS_COLLECTION),
+    where('userId', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
+
+  return onSnapshot(
+    ref,
+    (snapshot) => {
+      const notifications: ReservationNotification[] = [];
+
+      snapshot.docChanges().forEach((change) => {
+        const data = { id: change.doc.id, ...change.doc.data() } as Reservation;
+
+        // ✅ Hanya trigger notif saat dokumen berubah (bukan load awal)
+        if (change.type === 'modified') {
+          notifications.push(buildNotificationFromReservation(data));
+        }
+
+        // ✅ Notif saat reservasi baru dibuat
+        if (change.type === 'added' && !snapshot.metadata.hasPendingWrites) {
+          notifications.push(buildNotificationFromReservation(data));
+        }
+      });
+
+      if (notifications.length > 0) {
+        callback(notifications);
+      }
+    },
+    (error) => onError?.(error)
+  );
 }

@@ -163,6 +163,11 @@
     "today": "Today",
     "peakAt": "Peak busy hour at 14:00",
     "avoidHours": "Avoid busy hours 14:00 - 16:00"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications.",
+    "markAllRead": "Mark all as read"
   }
   
 }
