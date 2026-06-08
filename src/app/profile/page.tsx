@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Settings, Bell, Coffee, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Settings, Coffee, HelpCircle } from 'lucide-react';
 import ProfileCard from "@/components/profile/ProfileCard";
 import ModeCard from "@/components/profile/ModeCard";
 import MenuCard from "@/components/profile/MenuCard";
@@ -28,11 +28,6 @@ export default function ProfilePage() {
       {/* Profile */}
       <ProfileCard />
 
-      {/* Mode */}
-      <ModeCard
-        mode="Meeting"
-        description="Rekomendasi meja dan fitur IoT disesuaikan dengan profil vibe ini."
-      />
 
       {/* Menu */}
       <MenuCard

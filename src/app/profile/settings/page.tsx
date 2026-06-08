@@ -91,19 +91,8 @@ export default function SettingsPage() {
           </select>
         </div>
 
-        {/* Privacy */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-neutral-400" />
-            <p className="text-sm text-neutral-700">{t.settings.preferences.mapStatus}</p>
-          </div>
-          <button
-            onClick={() => setIsPublic(!isPublic)}
-            className={`h-6 w-11 rounded-full transition ${isPublic ? 'bg-emerald-500' : 'bg-neutral-300'}`}
-          >
-            <div className={`h-5 w-5 rounded-full bg-white shadow transform transition ${isPublic ? 'translate-x-5' : 'translate-x-1'}`} />
-          </button>
-        </div>
+        
+        
       </div>
 
       {/* Logout */}
