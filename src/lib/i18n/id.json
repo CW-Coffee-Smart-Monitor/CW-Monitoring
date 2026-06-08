@@ -164,5 +164,10 @@
     "today": "Hari ini",
     "peakAt": "Puncak keramaian pukul 14:00",
     "avoidHours": "Hindari jam sibuk 14:00 - 16:00"
+  },
+  "notifications": {
+    "title": "Notifikasi",
+    "empty": "Tidak ada notifikasi.",
+    "markAllRead": "Tandai semua dibaca"
   }
 }
