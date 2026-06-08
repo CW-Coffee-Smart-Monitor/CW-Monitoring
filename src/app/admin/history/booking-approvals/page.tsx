@@ -7,34 +7,7 @@ import { subscribeToAllReservations, acceptReservation, rejectReservation } from
 import { auth } from '@/lib/firebase';
 
 /* ── Types ─────────────────────────────────────────────────── */
-type Tier = 'PREMIUM' | 'STANDARD' | 'ENTERPRISE';
 type TabKey = 'Pending' | 'Approved' | 'Rejected';
-
-type Booking = {
-  id: number;
-  name: string;
-  initials: string;
-  avatarBg: string;
-  hasPhoto: boolean;
-  tier: Tier;
-  department: string;
-  email: string;
-  company: string;
-  role: string;
-  resource: string;
-  resourceIcon: 'monitor' | 'desk' | 'podcast';
-  time: string;
-  date: string;
-  duration: string;
-  guests: string;
-  purpose: string;
-  totalBookings: number;
-  cancellationRate: string;
-  lastVisit: string;
-  urgent: boolean;
-  tab: TabKey;
-  bookedTableId: number;
-};
 
 /* ── Floor plan constants (same as dashboard) ───────────────── */
 const SVG_W = 609, SVG_H = 483;

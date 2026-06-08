@@ -26,6 +26,9 @@ export interface Reservation {
   toleranceMinutes: number;
   status: ReservationStatus;
   createdAt: string;
+  rejectedAt?: string;
+  approvedAt?: string;
+  canceledAt?: string;
   expiresAt: number;
   source: 'map' | 'form';
 

@@ -422,3 +422,15 @@ export function subscribeToUserReservationNotifications(
     (error) => onError?.(error)
   );
 }
+
+  export async function cancelReservation(
+    reservationId: string,
+  ) {
+    await updateDoc(
+      doc(db, RESERVATIONS_COLLECTION, reservationId),
+      {
+        status: 'cancelled',
+        canceledAt: new Date().toISOString(),
+      }
+    );
+  }
