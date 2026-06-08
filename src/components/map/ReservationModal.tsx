@@ -40,10 +40,14 @@ export default function ReservationModal({ table, onClose }: ReservationModalPro
   const [success,      setSuccess]      = useState(false);
 
   const blockCode = table.name.charAt(0).toUpperCase();
-  const now           = new Date();
+  const now = new Date();
+
+  const todayStr = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta',
+  }).format(now);
+  
   const currentHour   = now.getHours();
   const currentMinute = now.getMinutes();
-  const todayStr      = now.toISOString().slice(0, 10);
   const minHour    = currentMinute >= 30 ? currentHour + 1 : currentHour;
   const hourOptions = Array.from({ length: 24 - minHour }, (_, i) =>
     String(minHour + i).padStart(2, '0')
