@@ -1,6 +1,6 @@
 'use client';
 
-import { Bell, HelpCircle, Search } from 'lucide-react';
+import { Bell,Search } from 'lucide-react';
 
 export default function AdminTopBar() {
   return (
@@ -16,9 +16,6 @@ export default function AdminTopBar() {
       <div className="flex items-center gap-2 text-neutral-500">
         <button className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors">
           <Bell className="w-5 h-5" />
-        </button>
-        <button className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors">
-          <HelpCircle className="w-5 h-5" />
         </button>
         <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm font-semibold">
           A
