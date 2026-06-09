@@ -1,9 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { BarChart2, Calendar, SlidersHorizontal, Table2, Download } from 'lucide-react';
+import { 
+  acceptReservation,
+  rejectReservation
+} from '@/lib/firestoreService';
 import { Reservation } from '@/types/reservation';
 import  { subscribeToAllReservations } from '@/lib/firestoreService';
 import { useEffect, useState } from 'react';
+import { auth } from '@/lib/firebase';
 
 
 const SESSION_HISTORY = [
@@ -30,6 +35,24 @@ export default function HistoryPage() {
     });
     return unsubscribe;
   }, []);
+
+  const handleApprove = async (reservationId: string) => {
+  try {
+    const adminId = auth.currentUser?.uid ?? 'admin';
+
+    await acceptReservation(reservationId, adminId);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleReject = async (reservationId: string) => {
+  try {
+    await rejectReservation(reservationId);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const pendingApprovals = reservations.filter((r) => r.status === 'pending').sort(
     (a, b) =>
@@ -84,14 +107,14 @@ export default function HistoryPage() {
               </p>
 
               <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400">
-                {reservation.userEmail ?? '-'}
+                {reservation.userEmail}
               </p>
             </div>
           </div>
               <div className="text-xs text-neutral-600 space-y-1">
                 <div className="flex justify-between">
                   <span className="text-neutral-400 font-medium">Resource:</span>
-                  <span className="font-semibold text-neutral-700">{reservation.tableId}</span>
+                  <span className="font-semibold text-neutral-700">{reservation.tableName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-neutral-400 font-medium">Time:</span>
@@ -102,14 +125,16 @@ export default function HistoryPage() {
                 <button
                   type="button"
                   className="flex-1 py-2 rounded-lg bg-[#4B135F] text-white text-xs font-semibold hover:bg-[#3a0f4a] transition-colors"
+                  onClick={() => handleApprove(reservation.id)}
                 >
                   Approve
                 </button>
                 <button
                   type="button"
-                  className="flex-1 py-2 rounded-lg border border-neutral-300 text-neutral-700 text-xs font-semibold hover:bg-neutral-50 transition-colors"
+                  className="flex-1 py-2 rounded-lg border border-neutral-300 text-neutral-700 text-xs font-semibold hover:bg-red-500 transition-colors"
+                  onClick={() => handleReject(reservation.id)}
                 >
-                  Reject
+                  Reject    
                 </button>
               </div>
             </div>

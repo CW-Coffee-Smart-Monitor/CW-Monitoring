@@ -163,7 +163,7 @@ export default function BookingApprovalsPage() {
               {getInitials(booking.guestName)}
             </div>
 
-            {/* Name + email */}
+            {/* Name + Email */}
             <div className="min-w-40">
               <p className="font-bold text-neutral-800">
                 {booking.guestName}
@@ -303,7 +303,7 @@ export default function BookingApprovalsPage() {
                 {/* Stated purpose */}
                 {selectedBooking.note && (
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-2">Stated Purpose</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-neutral-400 mb-2">Note :</p>
                     <div className="bg-neutral-50 rounded-lg p-3 text-sm text-neutral-600 italic leading-relaxed">
                       {selectedBooking.note}
                     </div>
