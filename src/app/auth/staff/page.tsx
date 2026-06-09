@@ -110,10 +110,9 @@ export default function StaffLoginPage() {
 
           {/* Logo mobile */}
           <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="w-8 h-8 rounded-lg bg-[#4B135F] flex items-center justify-center">
-              <LayoutDashboard className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-[#4B135F]">CW Monitor</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/CWClub.png" alt="CWClub Logo" className="w-8 h-8 object-contain" />
+            <span className="font-bold text-[#4B135F]">CWMonitor</span>
           </div>
 
           {/* Heading */}

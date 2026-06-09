@@ -34,15 +34,11 @@ export default function AdminSidebar() {
   return (
     <aside className="w-64 h-screen sticky top-0 bg-[#ECEEF6] flex flex-col shrink-0 border-r border-[#DDE0EE] overflow-hidden">
       {/* Identity */}
-      <div className="px-5 pt-6 pb-8">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#4B135F] flex items-center justify-center text-white text-sm font-bold shrink-0">
-            A
-          </div>
-          <div className="min-w-0">
-            <p className="text-[#1a0528] text-sm font-bold leading-tight truncate">CW Monitor</p>
-            <p className="text-[#7B6B8D] text-xs mt-0.5">Karyawan</p>
-          </div>
+      <div className="px-5 pt-6 pb-8 flex justify-center">
+        <div className="flex items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/CWClub.png" alt="CWClub Logo" className="w-10 h-10 object-contain shrink-0" />
+          <span className="text-lg font-bold tracking-wide text-[#1a0528]">CWMonitor</span>
         </div>
       </div>
 
