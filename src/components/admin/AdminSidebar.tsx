@@ -9,7 +9,6 @@ import {
   Archive,
   Wrench,
   Clock,
-  Settings,
   LogOut,
 } from 'lucide-react';
 
@@ -72,15 +71,8 @@ export default function AdminSidebar() {
         })}
       </nav>
 
-      {/* Bottom: Settings + Logout */}
+      {/* Bottom:  Logout */}
       <div className="px-3 pb-5 pt-4 border-t border-[#DDE0EE] space-y-0.5 mt-4">
-        <Link
-          href="/admin/settings"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[#5a4d6b] hover:bg-white/60 hover:text-[#4B135F] transition-all"
-        >
-          <Settings className="w-4 h-4 shrink-0 text-[#7B6B8D]" />
-          <span>Settings</span>
-        </Link>
         <button
           onClick={handleLogout}
           disabled={loggingOut}
