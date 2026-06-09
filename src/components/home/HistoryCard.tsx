@@ -9,10 +9,11 @@ import type { Reservation } from "@/types/reservation";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/context/LanguageContext";
 
-const STATUS_STYLE: Record<"confirmed" | "pending" | "cancelled", { className: string }> = {
+const STATUS_STYLE: Record<"confirmed" | "pending" | "cancelled" | "rejected", { className: string }> = {
   confirmed: { className: "bg-green-100 text-green-600" },
   pending: { className: "bg-yellow-100 text-yellow-600" },
-  cancelled: { className: "bg-red-100 text-red-600" },
+  cancelled: { className: "bg-red-100 text-neutral-600" },
+  rejected: { className: "bg-red-100 text-red-600" },
 };
 
 export default function HistoryCard() {
