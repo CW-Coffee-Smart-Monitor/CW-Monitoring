@@ -1,35 +1,38 @@
 'use client';
 
-import { Volume2, Thermometer } from 'lucide-react';
+import React from 'react';
 
 interface Props {
   title: string;
-  value: string;
+  value: string | number;
   description: string;
-  type: 'noise' | 'temperature';
+  icon: React.ReactNode;
+  badge?: string;
 }
 
 export default function SensorCard({
   title,
   value,
   description,
-  type,
+  icon,
+  badge = 'LIVE',
 }: Props) {
-  const Icon = type === 'noise' ? Volume2 : Thermometer;
-
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm">
-      
-      <div className="flex justify-between items-center mb-2">
-        <Icon className="text-orange-400" />
-        <span className="text-xs bg-neutral-100 px-2 py-1 rounded-full">
-          LIVE
-        </span>
-      </div>
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-100 flex flex-col justify-between h-full">
+      <div>
+        <div className="flex justify-between items-center mb-2">
+          <div className="text-amber-500 bg-amber-500/10 p-1.5 rounded-lg">
+            {icon}
+          </div>
+          <span className="text-[10px] font-bold tracking-widest bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-full animate-pulse">
+            {badge}
+          </span>
+        </div>
 
-      <h4 className="font-semibold">{title}</h4>
-      <p className="text-xl font-bold">{value}</p>
-      <p className="text-sm text-neutral-500">{description}</p>
+        <h4 className="text-sm font-bold text-neutral-800 mt-2">{title}</h4>
+        <p className="text-xl font-black text-neutral-900 mt-1">{value}</p>
+      </div>
+      <p className="text-xs text-neutral-400 mt-2 line-clamp-2">{description}</p>
     </div>
   );
 }

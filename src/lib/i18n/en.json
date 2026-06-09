@@ -68,16 +68,21 @@
     }
   },
   "home": {
-    "sensors": {
-      "noise": {
-        "title": "Quiet Vibe",
-        "value": "55 dB",
-        "description": "Great for focusing"
+    "indicators": {
+      "sofaGroup": {
+        "title": "Group Sofa (4P)",
+        "description": "{avail} of {total} sofas free"
       },
-      "temperature": {
-        "title": "Temperature",
-        "value": "22°C",
-        "description": "AC comfortable & stable"
+      "sofaFocus": {
+        "title": "Focus Sofa (2P)",
+        "description": "{avail} of {total} tables free"
+      },
+      "quietestBlock": {
+        "title": "Quietest Area",
+        "value": "Block {block}",
+        "description": "{count} tables free ({rate}% occupied)",
+        "fullValue": "All Full",
+        "fullDescription": "All areas are fully occupied"
       }
     }
   },
@@ -125,7 +130,19 @@
     }
   },
   "activeBookingBanner": {
-    "title": "Active Booking"
+    "title": "Active Booking",
+    "status": {
+      "pending": "Pending Approval",
+      "waiting": "Please Check-In",
+      "active": "Active Session",
+      "ghost": "Presence Warning"
+    },
+    "desc": {
+      "pending": "Your reservation at {table} is waiting for admin approval.",
+      "waiting": "Please tap your RFID card at {table} before {time}.",
+      "active": "Current duration of your table usage.",
+      "ghost": "Return to {table} within 30 seconds to avoid auto-checkout."
+    }
   },
   "capacityCard": {
     "title": "CW Coffee Capacity",

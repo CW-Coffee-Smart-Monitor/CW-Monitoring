@@ -48,3 +48,11 @@ next-env.d.ts
 # PlatformIO build output — jangan di-commit
 wokwi/.pio/
 wokwi/.vscode/
+
+# AI Context & Audit documents — jangan di-commit
+cw_monitoring_audit.md
+*audit.md
+*walkthrough.md
+*implementation_plan.md
+*task.md
+

@@ -68,16 +68,21 @@
     }
   },
   "home": {
-    "sensors": {
-      "noise": {
-        "title": "Kebisingan",
-        "value": "55 dB",
-        "description": "Cocok buat fokus"
+    "indicators": {
+      "sofaGroup": {
+        "title": "Sofa Grup (4P)",
+        "description": "{avail} dari {total} sofa kosong"
       },
-      "temperature": {
-        "title": "Suhu",
-        "value": "22°C",
-        "description": "AC nyaman & stabil"
+      "sofaFocus": {
+        "title": "Sofa Fokus (2P)",
+        "description": "{avail} dari {total} meja kosong"
+      },
+      "quietestBlock": {
+        "title": "Area Terkondusif",
+        "value": "Blok {block}",
+        "description": "{count} meja kosong ({rate}% terisi)",
+        "fullValue": "Semua Penuh",
+        "fullDescription": "Semua area terisi penuh"
       }
     }
   },
@@ -125,7 +130,19 @@
     }
   },
   "activeBookingBanner": {
-    "title": "Booking Aktif"
+    "title": "Booking Aktif",
+    "status": {
+      "pending": "Menunggu Persetujuan",
+      "waiting": "Silakan Check-In",
+      "active": "Sesi Aktif",
+      "ghost": "Peringatan Kehadiran"
+    },
+    "desc": {
+      "pending": "Reservasi Anda di {table} sedang menunggu persetujuan admin.",
+      "waiting": "Harap tap kartu RFID di {table} sebelum {time}.",
+      "active": "Durasi penggunaan meja Anda saat ini.",
+      "ghost": "Kembali ke {table} dalam 30 detik untuk menghindari auto-checkout."
+    }
   },
   "capacityCard": {
     "title": "Kapasitas CW Coffee",
