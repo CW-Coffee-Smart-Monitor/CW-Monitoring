@@ -113,10 +113,10 @@ export default function Header() {
           <img src="/CWClub.png" alt="CWClub Logo" className="h-8 w-8 object-contain" />
           <span className="text-base font-bold tracking-wide text-white">CWMonitor</span>
           <div className="flex-1" />
-          <button className="relative flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10">
+          <Link href="/profile/notifications" className="relative flex h-9 w-9 items-center justify-center rounded-full text-white/70 hover:bg-white/10">
             <Bell className="h-4.5 w-4.5" />
             {unreadCount > 0 && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500" />}
-          </button>
+          </Link>
           <button onClick={() => setMenuOpen((o) => !o)} className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/70 transition-colors hover:bg-white/10">
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>

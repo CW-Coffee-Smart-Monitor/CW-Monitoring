@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
-import { subscribeToUserReservationNotifications } from '@/lib/firestoreService';
-import type { NotificationItem } from '@/types/notification';
-import type { ReservationNotification } from '@/lib/notificationUtils';
+import { useEffect, useState, useCallback, useRef } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { subscribeToUserReservationNotifications } from "@/lib/firestoreService";
+import type { NotificationItem } from "@/types/notification";
+import type { ReservationNotification } from "@/lib/notificationUtils";
 
 // ─── localStorage helpers ─────────────────────────────────────
 
@@ -38,7 +38,6 @@ function loadNotificationsFromStorage(userId: string): NotificationItem[] {
     if (!raw) return [];
     const items = JSON.parse(raw) as NotificationItem[];
     const readIds = loadReadIds(userId);
-    // ✅ Apply isRead dari localStorage saat load
     return items.map((n) => ({ ...n, isRead: readIds.has(n.id) || n.isRead }));
   } catch {
     return [];
@@ -54,41 +53,43 @@ function saveNotificationsToStorage(userId: string, items: NotificationItem[]) {
 // ─── Hook ─────────────────────────────────────────────────────
 
 export function useReservationNotifications() {
-  // ✅ Ref untuk track userId dan notifications — tidak trigger re-render
   const userIdRef = useRef<string | null>(null);
   const notifsRef = useRef<NotificationItem[]>([]);
 
   const [notifications, setNotificationsState] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // ✅ Wrapper setState yang juga sync ke ref
   const applyNotifications = useCallback((items: NotificationItem[]) => {
     notifsRef.current = items;
     setNotificationsState(items);
     setUnreadCount(items.filter((n) => !n.isRead).length);
   }, []);
 
-  const addNotifications = useCallback((incoming: ReservationNotification[]) => {
-    const uid = userIdRef.current;
-    if (!uid) return;
+  const addNotifications = useCallback(
+    (incoming: ReservationNotification[]) => {
+      const uid = userIdRef.current;
+      if (!uid) return;
 
-    const readIds = loadReadIds(uid);
-    const existingIds = new Set(notifsRef.current.map((n) => n.id));
+      const readIds = loadReadIds(uid);
+      const existingIds = new Set(notifsRef.current.map((n) => n.id));
 
-    const fresh = incoming
-      .filter((n) => !existingIds.has(n.id))
-      .map((n) => ({
-        ...n,
-        isRead: readIds.has(n.id) ? true : n.isRead,
-      }));
+      const fresh = incoming
+        .filter((n) => !existingIds.has(n.id))
+        .map((n) => ({
+          ...n,
+          isRead: readIds.has(n.id) ? true : n.isRead,
+        }));
 
-    if (fresh.length === 0) return;
+      if (fresh.length === 0) return;
 
-    const updated = [...fresh, ...notifsRef.current].slice(0, 50);
-    saveNotificationsToStorage(uid, updated);
-    applyNotifications(updated);
-  }, [applyNotifications]);
+      const updated = [...fresh, ...notifsRef.current].slice(0, 50);
+      saveNotificationsToStorage(uid, updated);
+      applyNotifications(updated);
+    },
+    [applyNotifications],
+  );
 
+  // ✅ PERUBAHAN 1: dispatch custom event setelah markAllRead
   const markAllRead = useCallback(() => {
     const uid = userIdRef.current;
     if (!uid) return;
@@ -98,23 +99,28 @@ export function useReservationNotifications() {
     saveReadIds(uid, readIds);
     saveNotificationsToStorage(uid, updated);
     applyNotifications(updated);
+
+    window.dispatchEvent(new Event("cw-notif-updated"));
   }, [applyNotifications]);
 
-  const markRead = useCallback((id: string) => {
-    const uid = userIdRef.current;
-    if (!uid) return;
+  // ✅ PERUBAHAN 2: dispatch custom event setelah markRead
+  const markRead = useCallback(
+    (id: string) => {
+      const uid = userIdRef.current;
+      if (!uid) return;
 
-    const updated = notifsRef.current.map((n) =>
-      n.id === id ? { ...n, isRead: true } : n
-    );
-    const readIds = loadReadIds(uid);
-    readIds.add(id);
-    saveReadIds(uid, readIds);
-    saveNotificationsToStorage(uid, updated);
-    applyNotifications(updated);
-  }, [applyNotifications]);
+      const updated = notifsRef.current.map((n) => (n.id === id ? { ...n, isRead: true } : n));
+      const readIds = loadReadIds(uid);
+      readIds.add(id);
+      saveReadIds(uid, readIds);
+      saveNotificationsToStorage(uid, updated);
+      applyNotifications(updated);
 
-  // ✅ Satu useEffect saja — auth + subscription
+      window.dispatchEvent(new Event("cw-notif-updated"));
+    },
+    [applyNotifications],
+  );
+
   useEffect(() => {
     let unsubscribeReservations: (() => void) | undefined;
 
@@ -124,7 +130,6 @@ export function useReservationNotifications() {
       if (!user) {
         userIdRef.current = null;
         notifsRef.current = [];
-        // ✅ Boleh setState di sini karena ini callback dari external system (Firebase Auth)
         setNotificationsState([]);
         setUnreadCount(0);
         return;
@@ -132,26 +137,47 @@ export function useReservationNotifications() {
 
       userIdRef.current = user.uid;
 
-      // ✅ Load dari localStorage via ref — tidak setState di body effect
       const saved = loadNotificationsFromStorage(user.uid);
       notifsRef.current = saved;
 
-      // ✅ Ini callback dari onAuthStateChanged (external system) — diizinkan
       setNotificationsState(saved);
       setUnreadCount(saved.filter((n) => !n.isRead).length);
 
-      unsubscribeReservations = subscribeToUserReservationNotifications(
-        user.uid,
-        addNotifications,
-        (error) => console.error('NOTIFICATION ERROR:', error)
-      );
+      unsubscribeReservations = subscribeToUserReservationNotifications(user.uid, addNotifications, (error) => console.error("NOTIFICATION ERROR:", error));
     });
+
+    // ✅ PERUBAHAN 3: listener untuk cross-tab (StorageEvent)
+    const handleStorageChange = (e: StorageEvent) => {
+      const uid = userIdRef.current;
+      if (!uid) return;
+
+      const readKey = getReadKey(uid);
+      const notifKey = getNotifKey(uid);
+
+      if (e.key === readKey || e.key === notifKey) {
+        const updated = loadNotificationsFromStorage(uid);
+        applyNotifications(updated);
+      }
+    };
+
+    // ✅ PERUBAHAN 4: listener untuk same-tab (custom event)
+    const handleNotifUpdate = () => {
+      const uid = userIdRef.current;
+      if (!uid) return;
+      const updated = loadNotificationsFromStorage(uid);
+      applyNotifications(updated);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("cw-notif-updated", handleNotifUpdate);
 
     return () => {
       unsubscribeAuth();
       unsubscribeReservations?.();
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("cw-notif-updated", handleNotifUpdate);
     };
-  }, [addNotifications]);
+  }, [addNotifications, applyNotifications]);
 
   return { notifications, unreadCount, markAllRead, markRead };
 }
