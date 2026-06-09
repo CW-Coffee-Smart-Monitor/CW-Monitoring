@@ -11,8 +11,6 @@ export default function SettingsPage() {
   const router = useRouter();
   const { language, setLanguage, t } = useLanguage();
 
-  const [isPublic, setIsPublic] = useState(true);
-
   const handleLogout = async () => {
     await signOut(auth);
     await fetch('/api/auth/logout', { method: 'POST' });
