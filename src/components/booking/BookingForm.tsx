@@ -24,7 +24,7 @@ const initialForm: BookingFormValues = {
   date: '',
   time: '',
   note: '',
-  paymentProof: null,
+  // paymentProof: null,
 };
 
 export default function BookingForm({ onSubmit, initialBlockCode }: BookingFormProps) {
@@ -131,13 +131,13 @@ export default function BookingForm({ onSubmit, initialBlockCode }: BookingFormP
 
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
-    setForm((prev) => ({ ...prev, paymentProof: file }));
+    // setForm((prev) => ({ ...prev, paymentProof: file }));
   };
 
   const handleRemoveFile = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
-    setForm((prev) => ({ ...prev, paymentProof: null }));
+    // setForm((prev) => ({ ...prev, paymentProof: null }));
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -150,10 +150,10 @@ export default function BookingForm({ onSubmit, initialBlockCode }: BookingFormP
       return;
     }
 
-    if (!form.paymentProof) {
-      setFormError('Mohon upload bukti pembayaran DP terlebih dahulu.');
-      return;
-    }
+    // if (!form.paymentProof) {
+    //   setFormError('Mohon upload bukti pembayaran DP terlebih dahulu.');
+    //   return;
+    // }
 
     if (availabilityByBlock[form.blockCode] === false) {
       setFormError('Blok yang dipilih sudah dibooking pada tanggal dan waktu tersebut.');
