@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import { Clock } from "lucide-react";
@@ -82,7 +82,7 @@ export default function HistoryCard() {
     });
 
     const statusKey = latestReservation.status as keyof typeof STATUS_STYLE;
-    const statusLabel = hc.status[statusKey]?.label ?? latestReservation.status;
+    const statusLabel = (hc.status as Record<string, any>)[statusKey]?.label ?? latestReservation.status;
     const statusStyle = STATUS_STYLE[statusKey] ?? { className: "bg-neutral-100 text-neutral-600" };
 
     return {

@@ -461,3 +461,19 @@ export function subscribeToUserReservationNotifications(
       }
     );
   }
+
+  export async function fetchReservationsByDate(
+    dateStr: string
+  ): Promise<Reservation[]> {
+    const q = query(
+      collection(db, RESERVATIONS_COLLECTION),
+      where('date', '==', dateStr),
+      where('status', 'in', ['pending', 'confirmed'])
+    );
+    const snapshot = await getDocs(q);
+    const items: Reservation[] = [];
+    snapshot.forEach((docSnap) => {
+      items.push({ id: docSnap.id, ...docSnap.data() } as Reservation);
+    });
+    return items;
+  }
