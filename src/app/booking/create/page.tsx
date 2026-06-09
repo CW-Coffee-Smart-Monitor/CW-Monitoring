@@ -105,7 +105,7 @@ function CreateBookingContent() {
         note: values.note || '',
         userId: user.uid,
         userEmail: user.email || '',
-        paymentProofName: values.paymentProof?.name || '',
+        // paymentProofName: values.paymentProof?.name || '',
       });
 
       globalThis.sessionStorage.setItem('booking-success-toast', 'Booking berhasil disimpan.');

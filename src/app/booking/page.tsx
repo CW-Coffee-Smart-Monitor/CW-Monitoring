@@ -107,7 +107,7 @@ export default function BookingPage() {
         note: reservation.note ?? '',
         status: reservation.status === 'cancelled' ? 'cancelled' : reservation.status,
         createdAt: reservation.createdAt,
-        paymentProof: null,
+        // paymentProof: null,
       })),
     [reservations]
   );

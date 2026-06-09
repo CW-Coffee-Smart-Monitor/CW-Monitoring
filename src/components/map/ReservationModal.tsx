@@ -102,6 +102,8 @@ export default function ReservationModal({ table, onClose }: ReservationModalPro
         expiresAt,
         source: 'map',
         note: note.trim() || '',
+        rfidId: '',
+        rfidAssignedAt: '',
       });
 
       reserveTable(table.id, id, guestName.trim(), expiresAt);

@@ -37,5 +37,5 @@ export interface Reservation {
   note?: string;
   userId?: string;
   userEmail?: string;
-  paymentProofName?: string;
+  // paymentProofName?: string;
 }

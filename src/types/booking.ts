@@ -7,7 +7,7 @@ export interface BookingFormValues {
   date: string;
   time: string;
   note: string;
-  paymentProof: File | null;
+  // paymentProof: File | null;
 }
 
 export interface BookingItem {
@@ -18,7 +18,7 @@ export interface BookingItem {
   date: string;
   time: string;
   note: string;
-  paymentProof: File | null;
+  // paymentProof: File | null;
   status: BookingStatus;
   createdAt: string;
 }
@@ -30,11 +30,11 @@ export interface Reservation {
   durationMinutes: number;
   bookingId?: string;
   tableId?: number;
-  status: ReservationStatus;
+  // status: ReservationStatus;
   userId: string;
   createdAt: string;
   user?: {
     name?: string;
   };
-  paymentProof?: string;
+  // paymentProof?: string;
 }
