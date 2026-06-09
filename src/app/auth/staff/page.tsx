@@ -168,12 +168,7 @@ export default function StaffLoginPage() {
               >
                 {showPassword ? <EyeOff className="w-4 h-4 text-neutral-400" /> : <Eye className="w-4 h-4 text-neutral-400" />}
               </button>
-              <button
-                type="button"
-                className="text-[#4B135F] text-xs font-semibold hover:underline whitespace-nowrap shrink-0 border-l border-neutral-200 pl-3"
-              >
-                Lupa Sandi?
-              </button>
+
             </div>
 
             {/* Submit */}
