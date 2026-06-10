@@ -50,7 +50,8 @@ export default function LoginPage() {
   const handleRegister = async (e: { preventDefault: () => void; currentTarget: HTMLFormElement }) => {
     e.preventDefault();
     setError(''); setSuccess(''); setIsLoading(true);
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const fullname = (fd.get('fullname') as string).trim();
     const email    = (fd.get('email')    as string).trim();
     const phone    = (fd.get('phone')    as string).trim();
@@ -66,7 +67,7 @@ export default function LoginPage() {
         createdAt: new Date().toISOString(), role: 'user',
       });
       setSuccess('Akun berhasil dibuat! Silakan masuk.');
-      e.currentTarget.reset();
+      form.reset();
       setTimeout(() => { setTab('masuk'); setSuccess(''); }, 1500);
     } catch (err: unknown) {
       const fe = err as { code?: string };
