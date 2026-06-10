@@ -265,6 +265,8 @@ function tableReducer(state: State, action: Action): State {
             reservationId: null,
             reservedBy: null,
             reservedUntil: null,
+            reservationStatus: null,
+            reservationArrivalTime: null,
           } : t
         ),
       };
@@ -300,6 +302,8 @@ function tableReducer(state: State, action: Action): State {
             reservationId: activeRes.id,
             reservedBy: activeRes.guestName,
             reservedUntil: activeRes.expiresAt,
+            reservationStatus: activeRes.status,
+            reservationArrivalTime: activeRes.arrivalTime,
           };
         } else if (wasReserved && !activeRes) {
           // Reservation expired or removed in Firestore
@@ -309,6 +313,8 @@ function tableReducer(state: State, action: Action): State {
             reservationId: null,
             reservedBy: null,
             reservedUntil: null,
+            reservationStatus: null,
+            reservationArrivalTime: null,
           };
         }
         if (t.status === 'reserved') newReservedS.add(t.id);

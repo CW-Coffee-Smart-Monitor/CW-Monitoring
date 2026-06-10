@@ -9,6 +9,8 @@ import {
   Armchair,
 } from 'lucide-react';
 
+import { useTableContext } from '@/context/TableContext';
+
 /* ── Mock data ──────────────────────────────────────────────── */
 
 const GHOST_ALERTS = [
@@ -37,8 +39,8 @@ const OCCUPANCY_BARS = [
   { label: '6pm',  value: 28 },
 ];
 
-/* Tables occupied in snapshot (mock) */
-const OCCUPIED_IDS = new Set([2, 4, 8, 9, 10, 14, 23, 25, 29, 31]);
+// /* Tables occupied in snapshot (mock) */
+// const OCCUPIED_IDS = new Set([2, 4, 8, 9, 10, 14, 23, 25, 29, 31]);
 
 const SVG_W = 609, SVG_H = 483;
 
@@ -78,18 +80,18 @@ const TABLE_POS: { id: number; x: number; y: number; w?: number; h?: number }[] 
 ];
 
 /* Session data for occupied tables (mock) */
-const TABLE_SESSIONS: Record<number, { name: string; member: string; checkIn: string; duration: string; type: string }> = {
-  2:  { name: 'Andi Rizky',     member: 'MBR-0021', checkIn: '09:15', duration: '1j 45m', type: 'Workstation' },
-  4:  { name: 'Budi Santoso',   member: 'MBR-0047', checkIn: '08:30', duration: '2j 30m', type: 'Workstation' },
-  8:  { name: 'Citra Maharani', member: 'MBR-0093', checkIn: '10:00', duration: '1j 00m', type: 'Study Table' },
-  9:  { name: 'Dina Putri',     member: 'MBR-0112', checkIn: '10:20', duration: '0j 40m', type: 'Study Table' },
-  10: { name: 'Erik Wijaya',    member: 'MBR-0058', checkIn: '09:45', duration: '1j 15m', type: 'Study Table' },
-  14: { name: 'Fira Amelia',    member: 'MBR-0074', checkIn: '11:00', duration: '0j 05m', type: 'Sofa Lounge' },
-  23: { name: 'Gilang Tirta',   member: 'MBR-0031', checkIn: '07:50', duration: '3j 10m', type: 'Bar Seat' },
-  25: { name: 'Hana Kusuma',    member: 'MBR-0088', checkIn: '08:10', duration: '2j 50m', type: 'Bar Seat' },
-  29: { name: 'Irfan Noor',     member: 'MBR-0065', checkIn: '09:30', duration: '1j 30m', type: 'Bar Seat' },
-  31: { name: 'Julia Sari',     member: 'MBR-0102', checkIn: '10:45', duration: '0j 15m', type: 'Bar Seat' },
-};
+// const TABLE_SESSIONS: Record<number, { name: string; member: string; checkIn: string; duration: string; type: string }> = {
+//   2:  { name: 'Andi Rizky',     member: 'MBR-0021', checkIn: '09:15', duration: '1j 45m', type: 'Workstation' },
+//   4:  { name: 'Budi Santoso',   member: 'MBR-0047', checkIn: '08:30', duration: '2j 30m', type: 'Workstation' },
+//   8:  { name: 'Citra Maharani', member: 'MBR-0093', checkIn: '10:00', duration: '1j 00m', type: 'Study Table' },
+//   9:  { name: 'Dina Putri',     member: 'MBR-0112', checkIn: '10:20', duration: '0j 40m', type: 'Study Table' },
+//   10: { name: 'Erik Wijaya',    member: 'MBR-0058', checkIn: '09:45', duration: '1j 15m', type: 'Study Table' },
+//   14: { name: 'Fira Amelia',    member: 'MBR-0074', checkIn: '11:00', duration: '0j 05m', type: 'Sofa Lounge' },
+//   23: { name: 'Gilang Tirta',   member: 'MBR-0031', checkIn: '07:50', duration: '3j 10m', type: 'Bar Seat' },
+//   25: { name: 'Hana Kusuma',    member: 'MBR-0088', checkIn: '08:10', duration: '2j 50m', type: 'Bar Seat' },
+//   29: { name: 'Irfan Noor',     member: 'MBR-0065', checkIn: '09:30', duration: '1j 30m', type: 'Bar Seat' },
+//   31: { name: 'Julia Sari',     member: 'MBR-0102', checkIn: '10:45', duration: '0j 15m', type: 'Bar Seat' },
+// };
 
 const ZONE_SUMMARY = [
   { zone: 'Workstation',  occupied: 2, total: 6  },
@@ -112,6 +114,17 @@ export default function AdminDashboardPage() {
   const maxBar = Math.max(...OCCUPANCY_BARS.map(b => b.value));
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [confirmTableId, setConfirmTableId] = useState<string | null>(null);
+
+  const { tables } = useTableContext();
+
+  const selectedTable =
+    selectedId != null
+      ? tables.find(t => t.id === selectedId)
+      : null;
+
+  const getTableStatus = (id: number) => {
+    return tables.find(t => t.id === id)?.status ?? 'available';
+  };
 
   return (
     <div className="space-y-8">
@@ -173,8 +186,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <p className="font-semibold text-neutral-800">Interactive Floor Plan</p>
             <div className="flex items-center gap-4 text-xs text-neutral-500">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-gray-400 block"></span>Tersedia</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-green-400 block"></span>Tersedia</span>
               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500 block"></span>Ditempati</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-500 block"></span>Reservasi</span>
               <span className="text-neutral-300">· Klik meja untuk detail</span>
             </div>
           </div>
@@ -191,14 +205,19 @@ export default function AdminDashboardPage() {
               <image href="/Frame 112.svg" x="0" y="0" width={SVG_W} height={SVG_H} />
 
               {TABLE_POS.map(pos => {
-                const occupied = OCCUPIED_IDS.has(pos.id);
+              const status = getTableStatus(pos.id);
                 const w = pos.w ?? 63, h = pos.h ?? 43;
                 const x = pos.x - w / 2, y = pos.y - h / 2;
                 const isSelected = selectedId === pos.id;
-                const fill = occupied ? '#ef4444' : '#9ca3af';
+                const fill =
+                  status === 'occupied'
+                    ? '#ef4444'
+                    : status === 'reserved'
+                    ? '#f59e0b'
+                    : '#22c55e';
                 let opacity = 0.25;
                 if (isSelected) opacity = 0.85;
-                else if (occupied) opacity = 0.55;
+                else if (status !== 'available') opacity = 0.55;
                 return (
                   <g
                     key={pos.id}
@@ -212,7 +231,7 @@ export default function AdminDashboardPage() {
                         fill="none" stroke={fill} strokeWidth={2} rx={5} opacity={0.9}
                       />
                     )}
-                    <circle cx={pos.x} cy={pos.y} r={3} fill={fill} opacity={occupied ? 0.9 : 0.5} />
+                    <circle cx={pos.x} cy={pos.y} r={3} fill={fill} opacity={status !== 'available' ? 0.9 : 0.5} />
                   </g>
                 );
               })}
@@ -220,11 +239,18 @@ export default function AdminDashboardPage() {
               {/* Popup foreignObject */}
               {selectedId !== null && (() => {
                 const pos = TABLE_POS.find(p => p.id === selectedId)!;
-                const session = TABLE_SESSIONS[selectedId];
-                const occupied = OCCUPIED_IDS.has(selectedId);
+                const table = selectedTable;
+                const occupied = table?.status === 'occupied';
+                const reserved = table?.status === 'reserved';
+                const available =
+                  !occupied &&
+                  !reserved;
                 const th = pos.h ?? 43;
                 const popW = 192;
-                const popH = occupied ? 122 : 52;
+                const popH =
+                  occupied ? 60 :
+                  reserved ? 120 : 
+                  60;
                 const rawX = pos.x - popW / 2;
                 const px = Math.min(Math.max(rawX, 6), SVG_W - popW - 6);
                 const isAbove = pos.y > SVG_H / 2;
@@ -247,7 +273,7 @@ export default function AdminDashboardPage() {
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <span style={{ fontWeight: 700, fontSize: '11px', color: '#1a1a1a' }}>
-                          Meja #{selectedId}
+                          Meja {selectedId}
                         </span>
                         <button
                           type="button"
@@ -259,17 +285,62 @@ export default function AdminDashboardPage() {
                           </svg>
                         </button>
                       </div>
-                      {occupied && session ? (
+                      {occupied ? (
+                        <div
+                          style={{
+                            color: '#dc2626',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Terisi
+                        </div>
+                      ) : reserved ? (
                         <>
-                          <div style={{ color: '#374151', fontWeight: 600, marginBottom: '2px' }}>{session.name}</div>
-                          <div style={{ color: '#9ca3af', marginBottom: '4px' }}>{session.member} · {session.type}</div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ color: '#6b7280' }}>Masuk {session.checkIn}</span>
-                            <span style={{ color: '#4B135F', fontWeight: 700 }}>{session.duration}</span>
+                          <div
+                            style={{
+                              color: '#1f2937',
+                              fontWeight: 600,
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Atas Nama: {table?.reservedBy ?? 'Reservasi'}
+                          </div>
+
+                          <div
+                            style={{
+                              color: '#6b7280',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Jam: {table?.reservationArrivalTime ?? '-'}
+                          </div>
+                          <div
+                            style={{
+                              color: '#6b7280',
+                              marginBottom: '4px',
+                            }}
+                          >
+                            Status: {table?.reservationStatus ?? '-'}
+                          </div>
+
+                          <div
+                            style={{
+                              color: '#f59e0b',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Reservasi
                           </div>
                         </>
                       ) : (
-                        <div style={{ color: '#16a34a', fontWeight: 600 }}>Tersedia</div>
+                        <div
+                          style={{
+                            color: '#16a34a',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Tersedia
+                        </div>
                       )}
                     </div>
                   </foreignObject>
