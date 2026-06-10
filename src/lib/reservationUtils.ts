@@ -31,7 +31,7 @@ export function isReservationBlockingLiveTable(
   now = Date.now()
 ): boolean {
   return (
-    (reservation.status === 'pending' || reservation.status === 'confirmed') &&
+    (reservation.status === 'confirmed') &&
     reservation.date === getLocalDateKey(new Date(now)) &&
     reservation.expiresAt > now
   );
