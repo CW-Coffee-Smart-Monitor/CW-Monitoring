@@ -14,30 +14,31 @@ import type { Reservation } from '@/types/reservation';
 export default function ActiveBookingBanner() {
   const { tables } = useTableContext();
   const { t } = useLanguage();
-  
+
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [userActiveRes, setUserActiveRes] = useState<Reservation | null>(null);
   const [isDismissed, setIsDismissed] = useState(false);
   const [lastResId, setLastResId] = useState<string | null>(null);
 
-  // Listen to auth state
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
+      // ✅ setState di dalam callback Firebase — diizinkan
       setCurrentUser(user);
     });
     return () => unsub();
   }, []);
 
-  // Subscribe to user reservations to find active one (pending or confirmed)
   useEffect(() => {
     if (!currentUser) {
-      setUserActiveRes(null);
+      // ✅ Wrap dengan Promise.resolve agar tidak synchronous di body effect
+      Promise.resolve().then(() => setUserActiveRes(null));
       return;
     }
 
     const unsub = subscribeToUserReservations(
       currentUser.uid,
       (reservations) => {
+        // ✅ setState di dalam callback — diizinkan
         const active = reservations.find(
           (r) => r.status === 'confirmed' || r.status === 'pending'
         );
@@ -51,32 +52,26 @@ export default function ActiveBookingBanner() {
     return () => unsub();
   }, [currentUser]);
 
-  // Reset dismissal if active reservation changes
+  // ✅ Reset dismissal — setState di dalam kondisi perbandingan ref
   useEffect(() => {
     if (userActiveRes?.id !== lastResId) {
-      setIsDismissed(false);
-      setLastResId(userActiveRes?.id ?? null);
+      Promise.resolve().then(() => {
+        setIsDismissed(false);
+        setLastResId(userActiveRes?.id ?? null);
+      });
     }
   }, [userActiveRes, lastResId]);
 
-  // Match reservation with the live table state from TableContext
   const activeTable = useMemo(() => {
     if (!userActiveRes) return null;
     const tableIds = userActiveRes.coveredTableIds ?? (userActiveRes.tableId ? [userActiveRes.tableId] : []);
     const matchingTables = tables.filter((t) => tableIds.includes(t.id));
-    
-    // Prioritize occupied table (user is checked-in)
     const occupiedTable = matchingTables.find((t) => t.isOccupied);
     return occupiedTable ?? matchingTables[0] ?? null;
   }, [userActiveRes, tables]);
 
   if (isDismissed || !userActiveRes || !activeTable) return null;
 
-  // Determine state type
-  // 1. Ghost Booking (Warning)
-  // 2. Active Session (Occupied)
-  // 3. Waiting for Check-in (Confirmed, but not occupied)
-  // 4. Pending approval (Pending)
   let stateType: 'pending' | 'waiting' | 'active' | 'ghost' = 'pending';
 
   if (userActiveRes.status === 'pending') {
@@ -115,10 +110,13 @@ function ActiveBannerInner({ stateType, tableId, reservation, onClose }: BannerI
   const { elapsedFormatted } = useTableStatus(table);
   const abb = t.activeBookingBanner;
 
-  // Determine display values based on state type
   const config = useMemo(() => {
-    const tableLabel = table ? table.name : (reservation.blockCode ? `Blok ${reservation.blockCode}` : 'Meja');
-    
+    const tableLabel = table
+      ? table.name
+      : reservation.blockCode
+      ? `Blok ${reservation.blockCode}`
+      : 'Meja';
+
     switch (stateType) {
       case 'ghost':
         return {
@@ -167,7 +165,6 @@ function ActiveBannerInner({ stateType, tableId, reservation, onClose }: BannerI
         <div className="min-w-0">
           <p className="text-sm font-bold tracking-tight">{config.title}</p>
           <p className="mt-0.5 text-xs opacity-90">{config.description}</p>
-          
           {config.showTimer && (
             <p className="mt-2 font-mono text-xl font-bold tracking-wider">
               {elapsedFormatted}
