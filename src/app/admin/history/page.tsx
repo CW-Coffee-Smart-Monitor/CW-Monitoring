@@ -29,6 +29,7 @@ export default function HistoryPage() {
   const [reservations, setReservations] =
   useState<Reservation[]>([]);
 
+  const [toast, setToast] = useState<string | null>(null);
   useEffect(() => {
     const unsubscribe = subscribeToAllReservations((newReservations) => {
       setReservations(newReservations);
@@ -93,21 +94,30 @@ export default function HistoryPage() {
   URL.revokeObjectURL(url);
   }
 
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
   const handleApprove = async (reservationId: string) => {
   try {
     const adminId = auth.currentUser?.uid ?? 'admin';
 
     await acceptReservation(reservationId, adminId);
+    showToast('Booking approved successfully!');
   } catch (error) {
     console.error(error);
+    showToast("Failed to approve reservation.");
   }
 };
 
 const handleReject = async (reservationId: string) => {
   try {
     await rejectReservation(reservationId);
+    showToast('Booking rejected successfully!');
   } catch (error) {
     console.error(error);
+    showToast("Failed to reject reservation.");
   }
 };
 
@@ -456,6 +466,11 @@ const handleReject = async (reservationId: string) => {
           ))}
         </div>
       </section> */}
+        {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-neutral-800 text-white text-sm px-6 py-2.5 rounded-xl shadow-xl z-50 whitespace-nowrap">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
