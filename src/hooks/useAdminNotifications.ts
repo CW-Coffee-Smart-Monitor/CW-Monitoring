@@ -41,7 +41,6 @@ function saveAdminNotifications(items: AdminNotificationItem[]) {
   } catch {}
 }
 
-// ✅ Load SEKALI — simpan di module-level variable agar tidak dipanggil berulang
 let _cachedInit: { notifs: AdminNotificationItem[]; unread: number } | null = null;
 
 function getInitialState() {
@@ -57,15 +56,18 @@ export function useAdminNotifications() {
 
   const [notifications, setNotificationsState] = useState<AdminNotificationItem[]>(init.notifs);
   const [unreadCount, setUnreadCount] = useState<number>(init.unread);
-
-  // ✅ Init ref dengan data yang sama — tidak load ulang
   const notifsRef = useRef<AdminNotificationItem[]>(init.notifs);
+  const initialLoadDoneRef = useRef(false);
+  const knownReservationIdsRef = useRef<Set<string>>(
+    new Set(init.notifs.map((n) => n.reservationId))
+  );
 
-  const applyNotifications = useCallback((items: AdminNotificationItem[]) => {
+  // ✅ Hapus useCallback — fungsi biasa, ref tidak perlu di deps
+  function applyNotifications(items: AdminNotificationItem[]) {
     notifsRef.current = items;
     setNotificationsState(items);
     setUnreadCount(items.filter((n) => !n.isRead).length);
-  }, []);
+  }
 
   const addNotifications = useCallback((incoming: AdminNotificationItem[]) => {
     const readIds = loadAdminReadIds();
@@ -79,21 +81,20 @@ export function useAdminNotifications() {
 
     const updated = [...fresh, ...notifsRef.current].slice(0, 100);
     saveAdminNotifications(updated);
-
-    // ✅ Invalidate cache agar refresh berikutnya load data terbaru
     _cachedInit = null;
-
     applyNotifications(updated);
-  }, [applyNotifications]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const markAllRead = useCallback(() => {
     const updated = notifsRef.current.map((n) => ({ ...n, isRead: true }));
     const readIds = new Set(updated.map((n) => n.id));
     saveAdminReadIds(readIds);
     saveAdminNotifications(updated);
-    _cachedInit = null; // ✅ Invalidate
+    _cachedInit = null;
     applyNotifications(updated);
-  }, [applyNotifications]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const markRead = useCallback((id: string) => {
     const updated = notifsRef.current.map((n) =>
@@ -103,9 +104,10 @@ export function useAdminNotifications() {
     readIds.add(id);
     saveAdminReadIds(readIds);
     saveAdminNotifications(updated);
-    _cachedInit = null; // ✅ Invalidate
+    _cachedInit = null;
     applyNotifications(updated);
-  }, [applyNotifications]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const ref = query(
@@ -114,14 +116,27 @@ export function useAdminNotifications() {
     );
 
     const unsubscribe = onSnapshot(ref, (snapshot) => {
+      if (!initialLoadDoneRef.current) {
+        snapshot.docs.forEach((docSnap) => {
+          knownReservationIdsRef.current.add(docSnap.id);
+        });
+        initialLoadDoneRef.current = true;
+        return;
+      }
+
       const incoming: AdminNotificationItem[] = [];
 
       snapshot.docChanges().forEach((change) => {
         const data = { id: change.doc.id, ...change.doc.data() } as Reservation;
 
-        if (change.type === 'added' && !snapshot.metadata.hasPendingWrites) {
+        if (
+          change.type === 'added' &&
+          !knownReservationIdsRef.current.has(data.id)
+        ) {
+          knownReservationIdsRef.current.add(data.id);
           incoming.push(buildAdminNotification(data, 'new'));
         }
+
         if (change.type === 'modified') {
           incoming.push(buildAdminNotification(data, 'modified'));
         }
