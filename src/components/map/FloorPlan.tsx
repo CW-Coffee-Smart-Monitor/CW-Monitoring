@@ -188,6 +188,7 @@ export default function FloorPlan({ highlightFilter, roomFilter, recommendedId, 
               return (
                 <g
                   key={table.id}
+                  data-table-id={table.id}
                   opacity={dimmed ? 0.3 : 1}
                   style={{ cursor: zoom > 1 ? 'inherit' : 'pointer' }}
                   onClick={() => { if (!isDragging.current) onSelectTable(table); }}

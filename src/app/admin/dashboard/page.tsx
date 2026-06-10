@@ -325,6 +325,7 @@ export default function AdminDashboardPage() {
                 return (
                   <g
                     key={pos.id}
+                    data-table-id={pos.id}
                     style={{ cursor: "pointer" }}
                     onClick={(e) => {
                       e.stopPropagation();

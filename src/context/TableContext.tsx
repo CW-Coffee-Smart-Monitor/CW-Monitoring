@@ -518,6 +518,23 @@ export function TableProvider({ children }: { children: React.ReactNode }) {
     return s;
   }, [state.tables]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).__setTableStatus = (tableId: number, status: any) => {
+        dispatch({ type: 'DEMO_SET', tableId, status });
+      };
+      (window as any).__processSensorData = (payload: any) => {
+        dispatch({ type: 'SENSOR_UPDATE', payload });
+      };
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).__setTableStatus;
+        delete (window as any).__processSensorData;
+      }
+    };
+  }, []);
+
   return (
     <TableContext.Provider
       value={{
