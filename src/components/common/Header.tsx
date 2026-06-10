@@ -10,7 +10,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Radio, MonitorSmartphone, Menu, X, Home, Map, CalendarClock, User, Bell, ChevronRight } from "lucide-react";
+import {  Menu, X, Home, Map, CalendarClock, User, Bell, ChevronRight } from "lucide-react";
 import { useTableContext } from "@/context/TableContext";
 import { useReservationNotifications } from "@/hooks/useReservationNotifications";
 
@@ -22,7 +22,6 @@ const NAV_ITEMS = [
 ] as const;
 
 export default function Header() {
-  const { isSimulation, toggleSimulation } = useTableContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -33,7 +32,6 @@ export default function Header() {
       {/* ── TIER 1: Announcement / status bar (desktop only) ── */}
       <div className="hidden bg-[#4B135F] px-6 py-2 md:block">
         <div className="mx-auto flex max-w-screen-2xl items-center justify-center gap-3">
-          <span className="rounded-full bg-[#D07E20] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">Live</span>
           <p className="text-xs text-white/65">Monitoring real-time CW Coffee — sistem aktif &amp; terhubung</p>
           <ChevronRight className="h-3.5 w-3.5 text-white/35" />
         </div>
@@ -80,7 +78,7 @@ export default function Header() {
             {/* Divider */}
             <div className="mx-1 h-5 w-px bg-white/20" />
 
-            {/* Simulation toggle */}
+            {/* Simulation toggle
             <button onClick={toggleSimulation} className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white">
               {isSimulation ? (
                 <>
@@ -95,7 +93,7 @@ export default function Header() {
                   Live
                 </>
               )}
-            </button>
+            </button> */}
 
             {/* CTA — "Pesan Meja" pill button */}
             <Link href="/booking" className="rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-[#4B135F] shadow-sm transition-all hover:bg-white/90 hover:shadow-md active:scale-[0.97]">
