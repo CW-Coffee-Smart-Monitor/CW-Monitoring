@@ -14,7 +14,7 @@ import {
 
 const NAV_ITEMS = [
   { href: '/admin/dashboard',    label: 'Dashboard',                  icon: LayoutDashboard },
-  { href: '/admin/rfid',         label: 'RFID & Membership Hub',      icon: CreditCard      },
+  { href: '/admin/rfid',         label: 'RFID Devices',      icon: CreditCard      },
   { href: '/admin/history',      label: 'History & Archive Logs',     icon: Archive         },
   { href: '/admin/maintenance',  label: 'Maintenance & Service Desk', icon: Wrench          },
   { href: '/admin/shift',        label: 'Shift Summary',              icon: Clock           },
