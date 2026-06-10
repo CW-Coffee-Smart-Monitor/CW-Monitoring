@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, User, Clock, CalendarDays, CheckCircle, FileText } from "lucide-react";
 import type { TableState } from "@/types";
@@ -57,9 +57,27 @@ export default function ReservationModal({ table, onClose }: ReservationModalPro
     return ["00", "30"].filter((m) => Number.parseInt(m, 10) > currentMinute);
   })();
 
+  useEffect(() => {
+    if (
+      minuteOptions.length > 0 &&
+      !minuteOptions.includes(arrivalMinute)
+    ) {
+      setArrivalMinute(minuteOptions[0]);
+    }
+  }, [arrivalHour, arrivalMinute]);
+
   const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setArrivalHour(e.target.value);
-    setArrivalMinute("00");
+    const hour = e.target.value;
+
+    setArrivalHour(hour);
+
+    const h = Number.parseInt(hour, 10);
+
+    if (h === currentHour && currentMinute < 30) {
+      setArrivalMinute('30');
+    } else {
+      setArrivalMinute('00');
+    }
   };
 
   const handleSubmit = async (e: React.SyntheticEvent) => {
