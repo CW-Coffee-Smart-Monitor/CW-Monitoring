@@ -14,7 +14,9 @@ export function proxy(req: NextRequest) {
     STATIC_EXT.test(pathname) ||
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') ||
-    pathname === '/favicon.ico'
+    pathname === '/favicon.ico' ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml'
   ) {
     return NextResponse.next();
   }

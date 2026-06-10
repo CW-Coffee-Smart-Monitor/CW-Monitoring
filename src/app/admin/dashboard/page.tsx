@@ -191,9 +191,24 @@ export default function AdminDashboardPage() {
                 const opacity = isSelected ? 0.85 : status !== "available" ? 0.55 : 0.25;
 
                 return (
-                  <g key={pos.id} style={{ cursor: "pointer" }}
-                    onClick={(e) => { e.stopPropagation(); setSelectedId(isSelected ? null : pos.id); }}>
-                    <rect x={x} y={y} width={w} height={h} fill={fill} opacity={opacity} rx={4} />
+                  <g
+                    key={pos.id}
+                    data-table-id={pos.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedId(isSelected ? null : pos.id);
+                    }}
+                  >
+                    <rect
+                      x={x}
+                      y={y}
+                      width={w}
+                      height={h}
+                      fill={fill}
+                      opacity={opacity}
+                      rx={4}
+                    />
                     {isSelected && (
                       <rect x={x - 2} y={y - 2} width={w + 4} height={h + 4}
                         fill="none" stroke={fill} strokeWidth={2} rx={5} opacity={0.9} />
