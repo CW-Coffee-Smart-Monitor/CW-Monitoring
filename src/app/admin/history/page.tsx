@@ -36,6 +36,63 @@ export default function HistoryPage() {
     return unsubscribe;
   }, []);
 
+  const exportJson = () => {
+    const dataStr = JSON.stringify(reservations, null, 2);
+
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reservations_${new Date().toISOString()}.json`;
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  const exportCSV = () => {
+    const headers = [
+      'Guest Name',
+      'Email', 
+      'Table Name',
+      'Date',
+      'Arrival Time',
+    ];
+  
+  const rows = reservations.map((r) => [
+    r.guestName,
+    r.userEmail ?? '',
+    r.tableName ?? '',
+    r.date,
+    r.arrivalTime
+
+  ]);
+  const csvContent = [
+  ...headers.join(','),
+  ...rows.map((row) =>
+      row.map((cell) => `"${cell}"`).join(',')
+    ),
+  ].join('\n');
+
+  const blob = new Blob([csvContent], {
+    type: 'text/csv;charset=utf-8;',
+  });
+
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `booking-history-${Date.now()}.csv`;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+  }
+
   const handleApprove = async (reservationId: string) => {
   try {
     const adminId = auth.currentUser?.uid ?? 'admin';
@@ -131,7 +188,7 @@ const handleReject = async (reservationId: string) => {
                 </button>
                 <button
                   type="button"
-                  className="flex-1 py-2 rounded-lg border border-neutral-300 text-neutral-700 text-xs font-semibold hover:bg-red-500 transition-colors"
+                  className="flex-1 py-2 rounded-lg border border-neutral-300 text-neutral-700 text-xs font-semibold hover:bg-red-500 hover:text-white transition-colors"
                   onClick={() => handleReject(reservation.id)}
                 >
                   Reject    
@@ -177,6 +234,7 @@ const handleReject = async (reservationId: string) => {
           <div className="flex gap-3 shrink-0">
             <button
               type="button"
+              onClick={exportCSV}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#4B135F] text-white text-sm font-semibold hover:bg-[#3a0f4a] transition-colors"
             >
               <Download className="w-4 h-4" />
@@ -184,6 +242,7 @@ const handleReject = async (reservationId: string) => {
             </button>
             <button
               type="button"
+              onClick={exportJson}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-neutral-300 text-neutral-700 text-sm font-semibold hover:bg-neutral-50 transition-colors"
             >
               <Download className="w-4 h-4" />
@@ -194,7 +253,7 @@ const handleReject = async (reservationId: string) => {
       </section>
 
       {/* ── TABLE SESSION HISTORY ─────────────────────────── */}
-      <section>
+      {/* <section>
         <div className="flex items-start justify-between mb-4">
           <div>
             <h2 className="text-2xl font-bold text-neutral-800">Table Session History</h2>
@@ -269,7 +328,7 @@ const handleReject = async (reservationId: string) => {
         >
           See All Table Sessions
         </Link>
-      </section>
+      </section> */}
 
       {/* ── BOOKING HISTORY ───────────────────────────────── */}
       <section>
@@ -362,7 +421,7 @@ const handleReject = async (reservationId: string) => {
       </section>
 
       {/* ── MAINTENANCE & HARDWARE LOGS ───────────────────── */}
-      <section>
+      {/* <section>
         <div className="mb-4">
           <h2 className="text-2xl font-bold text-neutral-800">Maintenance &amp; Hardware Logs</h2>
           <p className="text-neutral-500 text-sm mt-0.5">Technical status matrix for deployed ESP32 sensory hardware.</p>
@@ -396,7 +455,7 @@ const handleReject = async (reservationId: string) => {
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
