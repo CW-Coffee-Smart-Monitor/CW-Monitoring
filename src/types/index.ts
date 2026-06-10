@@ -33,6 +33,8 @@ export interface TableState {
   reservationId?: string | null;
   reservedBy?: string | null;
   reservedUntil?: number | null; // unix ms — tolerance expires at this time
+  reservationStatus?: string | null;
+  reservationArrivalTime?: string | null;
 }
 
 /** Facility tags attached to each table */
